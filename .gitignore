@@ -1,0 +1,8 @@
+
+build/
+.vscode/
+
+callgrind.*
+perf.*
+gmon.*
+test.*
