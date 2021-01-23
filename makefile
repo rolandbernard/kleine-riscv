@@ -32,3 +32,4 @@ $(BIN)/%: $(TEST)/%.cpp $(RTL)/%.cpp
 	@$(CXX) -g -I$(shell yosys-config --datdir)/include -I$(BUILD) -o $@ $<
 
 .PHONY: test build-tests
+.SECONDARY:
