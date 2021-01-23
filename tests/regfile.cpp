@@ -36,12 +36,12 @@ int main() {
         uint32_t rd_value = rand();
         bool rd_enable = rand() > RAND_MAX / 2;
 
-        top.p_rs1__sel.set<unsigned>(rs1);
+        top.p_rs1__sel.set<uint32_t>(rs1);
         top.p_rs1__enable.set<bool>(rs1_enable);
-        top.p_rs2__sel.set<unsigned>(rs2);
+        top.p_rs2__sel.set<uint32_t>(rs2);
         top.p_rs2__enable.set<bool>(rs2_enable);
-        top.p_rd__sel.set<unsigned>(rd);
-        top.p_rd__data.set<unsigned>(rd_value);
+        top.p_rd__sel.set<uint32_t>(rd);
+        top.p_rd__data.set<uint32_t>(rd_value);
         top.p_rd__enable.set<bool>(rd_enable);
 
         top.p_clk.set<bool>(true);
