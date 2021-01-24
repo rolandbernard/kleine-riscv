@@ -1,5 +1,0 @@
-module loadstore (
-
-);
-
-endmodule
