@@ -13,13 +13,9 @@ RTLS=$(patsubst $(SRC)/%.v, $(RTL)/%.cpp, $(VRLS))
 
 SIMS=$(shell find $(TEST) -type f -name '*.cpp')
 TESTS=$(patsubst $(TEST)/%.cpp, $(BIN)/%, $(SIMS))
+RUNTESTS=$(addprefix runtest.,$(TESTS))
 
-test: build-tests
-	@echo "Running tests:"
-	./build/test/regfile
-	./build/test/alu
-
-build-tests: $(TESTS)
+test: $(RUNTESTS)
 
 $(RTL)/%.cpp: $(SRC)/%.v
 	@echo Building $@
@@ -31,5 +27,9 @@ $(BIN)/%: $(TEST)/%.cpp $(RTL)/%.cpp
 	@mkdir -p $(shell dirname $@)
 	@$(CXX) -g -I$(shell yosys-config --datdir)/include -I$(BUILD) -o $@ $<
 
+runtest.$(BIN)/%: $(BIN)/%
+	@echo "Running test $@"
+	@$<
+	
 .PHONY: test build-tests
 .SECONDARY:
