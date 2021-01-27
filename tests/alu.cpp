@@ -6,20 +6,14 @@
 
 using namespace std;
 
-#define FUNC_ADD 0
-#define FUNC_SUB 1
-#define FUNC_SHL 2
-#define FUNC_SHR 3
-#define FUNC_SHA 4
-#define FUNC_OR  5
-#define FUNC_AND 6
-#define FUNC_XOR 7
-#define FUNC_EQ  8
-#define FUNC_NE  9
-#define FUNC_LT  10
-#define FUNC_GE  11
-#define FUNC_LTU 12
-#define FUNC_GEU 13
+#define FUNC_ADD 0b000
+#define FUNC_SUB 0b001
+#define FUNC_SHR 0b010
+#define FUNC_SHA 0b011
+#define FUNC_SHL 0b100
+#define FUNC_AND 0b101
+#define FUNC_OR  0b110
+#define FUNC_XOR 0b111
 
 #include "rtl/alu.cpp"
 
@@ -31,13 +25,16 @@ int main() {
     top.step();
     for (int cycle = 0; cycle < 1000000; ++cycle) {
 
-        uint32_t in1 = rand() << (rand() % 31);
+        uint32_t in1 = rand();
         uint32_t in2 = rand();
         if (rand() < RAND_MAX / 2) {
             in1 %= 100;
             in2 %= 100;
+        } else {
+            in1 <<= rand() % 16;
+            in2 <<= rand() % 16;
         }
-        uint32_t func = rand() % 14;
+        uint32_t func = rand() & 0b111;
         if (func == FUNC_SHL || func == FUNC_SHR || func == FUNC_SHA) {
             in2 %= 32;
         }
@@ -48,7 +45,7 @@ int main() {
         top.step();
 
         uint32_t out = top.p_out.get<uint32_t>();
-
+        
         switch (func) {
         case FUNC_ADD:
             assert(out == (in1 + in2));
@@ -73,24 +70,6 @@ int main() {
             break;
         case FUNC_XOR:
             assert(out == (in1 ^ in2));
-            break;
-        case FUNC_EQ:
-            assert(out == (in1 == in2 ? 1 : 0));
-            break;
-        case FUNC_NE:
-            assert(out == (in1 != in2 ? 1 : 0));
-            break;
-        case FUNC_LT:
-            assert(out == ((int32_t)in1 < (int32_t)in2 ? 1 : 0));
-            break;
-        case FUNC_GE:
-            assert(out == ((int32_t)in1 >= (int32_t)in2 ? 1 : 0));
-            break;
-        case FUNC_LTU:
-            assert(out == (in1 < in2 ? 1 : 0));
-            break;
-        case FUNC_GEU:
-            assert(out == (in1 >= in2 ? 1 : 0));
             break;
         default:
             break;
