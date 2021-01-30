@@ -10,27 +10,27 @@ module regfile (
 
     reg [31:0] registers [0:31];
 
-    always @(posedge clk) begin
+    always @(*) begin
         if (rs1_sel != 0) begin
             if (rs1_sel == rd_sel) begin
-                rs1_out <= rd_data;
+                rs1_out = rd_data;
             end else begin
-                rs1_out <= registers[rs1_sel];
+                rs1_out = registers[rs1_sel];
             end
         end else begin
-            rs1_out <= 0;
+            rs1_out = 0;
         end
     end
     
-    always @(posedge clk) begin
+    always @(*) begin
         if (rs2_sel != 0) begin
             if (rs2_sel == rd_sel) begin
-                rs2_out <= rd_data;
+                rs2_out = rd_data;
             end else begin
-                rs2_out <= registers[rs2_sel];
+                rs2_out = registers[rs2_sel];
             end
         end else begin
-            rs2_out <= 0;
+            rs2_out = 0;
         end
     end
 
