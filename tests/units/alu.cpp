@@ -13,7 +13,7 @@ using namespace std;
 #define ALU_XOR     0b100
 #define ALU_SRL_SRA 0b101
 #define ALU_OR      0b110
-#define ALU_AND     0b111
+#define ALU_AND_CLR 0b111
 
 #include "rtl/alu.cpp"
 
@@ -78,8 +78,12 @@ int main() {
         case ALU_OR:
             assert(out == (in1 | in2));
             break;
-        case ALU_AND:
-            assert(out == (in1 & in2));
+        case ALU_AND_CLR:
+            if (func_sel) {
+                assert(out == ((~in1) & in2));
+            } else {
+                assert(out == (in1 & in2));
+            }
             break;
         default:
             break;
