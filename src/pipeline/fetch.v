@@ -1,5 +1,6 @@
 module fetch (
     input clk,
+    input reset,
     input branch,
     input [31:0] branch_vec,
     input trap,
@@ -22,7 +23,9 @@ assign fetch_addr = pc;
 wire next_pc = pc + 4;
 
 always @(posedge clk) begin
-    if (trap) begin
+    if (reset) begin
+        pc <= 32'h00000000;
+    end else if (trap) begin
         pc <= trap_vec;
     end else if (branch) begin
         pc <= branch_vec;

@@ -5,6 +5,8 @@ module decode (
     input [31:0] pc_in,
     input [31:0] next_pc_in,
     input stall,
+    input [4:0] data_hazard_0,
+    input [4:0] data_hazard_1,
 
     output [4:0] rs1_select,
     output [4:0] rs2_select,
@@ -74,14 +76,25 @@ assign rs1_select = instr[19:15];
 assign rs2_select = instr[24:20];
 assign csr_select = instr[31:20];
 
+wire data_hazard = (
+    data_hazard_0 == rs1_select || data_hazard_0 == rs2_select ||
+    data_hazard_1 == rs1_select || data_hazard_1 == rs2_select
+);
+wire acctual_stall = (stall || !valid_in || data_hazard_0 || data_hazard);
+
 always @(posedge clk) begin
-    if (!stall && valid_in) begin
+    if (!acctual_stall) begin
         pc_out <= pc_in;
         next_pc_out <= next_pc_in;
         data_rs1 <= rs1_data;
         data_rs2 <= rs2_data;
         data_csr <= csr_data;
         data_uimm <= instr[19:15];
+        csr_addr <= instr[31:20];
+        readable_csr <= csr_readable;
+        writeable_csr <= csr_writeable;
+        
+        // Decode immediates
         case (instr[6:0])
             7'b0010111,
             7'b0110111 : data_imm <= {instr[31:12], 12'b0}; // U-type
@@ -92,12 +105,8 @@ always @(posedge clk) begin
             7'b0100011 : data_imm <= {{20{instr[31]}}, instr[31:25], instr[11:7]}; // S-type
             7'b0100011 : data_imm <= {{19{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0}; // B-type
         endcase
-        
-        csr_addr <= instr[31:20];
 
-        readable_csr <= csr_readable;
-        writeable_csr <= csr_writeable;
-
+        // Decode controll signals
         case (instr[6:0])
             7'b0110111 : begin // LUI
                 alu_func <= ALU_OR;
