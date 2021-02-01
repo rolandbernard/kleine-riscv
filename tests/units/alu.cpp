@@ -6,14 +6,14 @@
 
 using namespace std;
 
-#define FUNC_ADD 0b000
-#define FUNC_SUB 0b001
-#define FUNC_SHR 0b010
-#define FUNC_SHA 0b011
-#define FUNC_SHL 0b100
-#define FUNC_AND 0b101
-#define FUNC_OR  0b110
-#define FUNC_XOR 0b111
+#define ALU_ADD_SUB 0b000
+#define ALU_SLL     0b001
+#define ALU_SLT     0b010
+#define ALU_SLTU    0b011
+#define ALU_XOR     0b100
+#define ALU_SRL_SRA 0b101
+#define ALU_OR      0b110
+#define ALU_AND     0b111
 
 #include "rtl/alu.cpp"
 
@@ -35,41 +35,51 @@ int main() {
             in2 <<= rand() % 16;
         }
         uint32_t func = rand() & 0b111;
-        if (func == FUNC_SHL || func == FUNC_SHR || func == FUNC_SHA) {
+        uint32_t func_sel = rand() & 0b1;
+        if (func == ALU_SLL || func == ALU_SRL_SRA) {
             in2 %= 32;
         }
         top.p_in1.set<uint32_t>(in1);
         top.p_in2.set<uint32_t>(in2);
         top.p_func.set<uint32_t>(func);
+        top.p_func__sel.set<uint32_t>(func_sel);
 
         top.step();
 
         uint32_t out = top.p_out.get<uint32_t>();
         
         switch (func) {
-        case FUNC_ADD:
-            assert(out == (in1 + in2));
+        case ALU_ADD_SUB:
+            if (func_sel) {
+                assert(out == (in1 - in2));
+            } else {
+                assert(out == (in1 + in2));
+            }
             break;
-        case FUNC_SUB:
-            assert(out == (in1 - in2));
-            break;
-        case FUNC_SHL:
+        case ALU_SLL:
             assert(out == (in1 << in2));
             break;
-        case FUNC_SHR:
-            assert(out == (in1 >> in2));
+        case ALU_SLT:
+            assert(out == ((int32_t)in1 < (int32_t)in2 ? 1 : 0));
             break;
-        case FUNC_SHA:
-            assert(out == (uint32_t)((int32_t)in1 >> in2));
+        case ALU_SLTU:
+            assert(out == (in1 < in2 ? 1 : 0));
             break;
-        case FUNC_OR:
+        case ALU_XOR:
+            assert(out == (in1 ^ in2));
+            break;
+        case ALU_SRL_SRA:
+            if (func_sel) {
+                assert(out == (uint32_t)((int32_t)in1 >> in2));
+            } else {
+                assert(out == (in1 >> in2));
+            }
+            break;
+        case ALU_OR:
             assert(out == (in1 | in2));
             break;
-        case FUNC_AND:
+        case ALU_AND:
             assert(out == (in1 & in2));
-            break;
-        case FUNC_XOR:
-            assert(out == (in1 ^ in2));
             break;
         default:
             break;
