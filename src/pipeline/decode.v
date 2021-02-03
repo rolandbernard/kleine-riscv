@@ -1,9 +1,9 @@
 module decode (
     input clk,
-    input valid_in,
-    input [31:0] instr,
     input [31:0] pc_in,
     input [31:0] next_pc_in,
+    input [31:0] instr,
+    input valid_in,
 
     input stall_in,
     input invalidate,
@@ -19,73 +19,57 @@ module decode (
     input [31:0] csr_data,
     input csr_readable,
     input csr_writeable,
+    
+    output stall_out,
 
+    // Misc
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
+    // EX
     output reg [31:0] data_rs1,
     output reg [31:0] data_rs2,
     output reg [31:0] data_csr,
     output reg [31:0] data_imm,
     output reg [5:0] data_uimm,
-    
-    output reg [5:0] rd_addr,
-    output reg [11:0] csr_addr,
-
     output reg [2:0] alu_func,
     output reg alu_func_sel,
     output reg [1:0] alu_a_select,
     output reg [1:0] alu_b_select,
-    output reg [1:0] write_select,
     output reg cmp_less,
     output reg cmp_sign,
     output reg cmp_negate,
     output reg jump,
     output reg branch,
-    output reg load,
-    output reg [1:0] load_store_size,
-    output reg load_signed,
-    output reg store,
     output reg read_csr,
     output reg write_csr,
     output reg readable_csr,
     output reg writeable_csr,
-    output reg valid_out,
+    // MEM
+    output reg load,
+    output reg store,
+    output reg [1:0] load_store_size,
+    output reg load_signed,
+    // WB
+    output reg [1:0] write_select,
+    output reg [5:0] rd_addr,
+    output reg [11:0] csr_addr,
     output reg mret,
     output reg wfi,
     
+    output reg valid_out,
     output reg [3:0] ecause,
     output reg exception,
-    
-    output stall_out,
 );
 
-localparam ALU_ADD_SUB = 3'b000;
-localparam ALU_SLL     = 3'b001;
-localparam ALU_SLT     = 3'b010;
-localparam ALU_SLTU    = 3'b011;
-localparam ALU_XOR     = 3'b100;
-localparam ALU_SRL_SRA = 3'b101;
-localparam ALU_OR      = 3'b110;
-localparam ALU_AND_CLR = 3'b111;
-
-localparam ALU_SEL_REG    = 2'b00;
-localparam ALU_SEL_IMM    = 2'b01;
-localparam ALU_SEL_PC_CSR = 2'b10;
-localparam ALU_SEL_ZERO   = 2'b11;
-
-localparam WRITE_SEL_ALU     = 2'b00;
-localparam WRITE_SEL_CSR     = 2'b01;
-localparam WRITE_SEL_LOAD    = 2'b10;
-localparam WRITE_SEL_NEXT_PC = 2'b11;
+`include "../params.vh"
 
 assign rs1_select = instr[19:15];
 assign rs2_select = instr[24:20];
 assign csr_select = instr[31:20];
 
-// Stall if there is a data hazard
 assign stall_out = (
-    data_hazard_0 == rs1_select || data_hazard_0 == rs2_select ||
-    data_hazard_1 == rs1_select || data_hazard_1 == rs2_select
+    data_hazard_0 != 0 && (data_hazard_0 == rs1_select || data_hazard_0 == rs2_select) ||
+    data_hazard_1 != 0 && (data_hazard_1 == rs1_select || data_hazard_1 == rs2_select)
 );
 
 always @(posedge clk) begin

@@ -6,15 +6,7 @@ module alu (
     output reg [31:0] out,
 );
 
-// These are the values also used in the ISA
-localparam ALU_ADD_SUB = 3'b000;
-localparam ALU_SLL     = 3'b001;
-localparam ALU_SLT     = 3'b010;
-localparam ALU_SLTU    = 3'b011;
-localparam ALU_XOR     = 3'b100;
-localparam ALU_SRL_SRA = 3'b101;
-localparam ALU_OR      = 3'b110;
-localparam ALU_AND_CLR = 3'b111;
+`include "../params.vh"
 
 always @(*) begin
     case (func)
