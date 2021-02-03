@@ -110,7 +110,7 @@ alu ex_alu (
 
 always @(posedge clk) begin
     if (!stall) begin
-        if (valid_in) begin
+        if (valid_in && !invalidate) begin
             pc_out <= pc_in;
             next_pc_out <= next_pc_in;
             alu_data <= alu_output;

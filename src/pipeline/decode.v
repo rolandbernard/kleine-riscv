@@ -74,7 +74,7 @@ assign stall_out = (
 
 always @(posedge clk) begin
     if (!stall_in) begin
-        if (!stall_out && !invalidate) begin
+        if (valid_in && !stall_out && !invalidate) begin
             pc_out <= pc_in;
             next_pc_out <= next_pc_in;
             data_rs1 <= rs1_data;
