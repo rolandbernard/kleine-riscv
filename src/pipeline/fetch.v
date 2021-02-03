@@ -15,8 +15,8 @@ module fetch (
 
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
-    output reg valid,
     output reg [31:0] instr,
+    output reg valid,
 );
 
 reg [31:0] pc;
