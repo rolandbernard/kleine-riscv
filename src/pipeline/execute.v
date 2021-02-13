@@ -8,7 +8,7 @@ module execute (
     input [31:0] rs2_data_in,
     input [31:0] csr_data_in,
     input [31:0] imm_data,
-    input [5:0] uimm_data,
+    input [4:0] uimm_data,
     input [2:0] alu_func,
     input alu_func_sel,
     input [1:0] alu_a_select,
@@ -29,7 +29,7 @@ module execute (
     input load_signed_in,
     // WB
     input [1:0] write_select_in,
-    input [5:0] rd_addr_in,
+    input [4:0] rd_addr_in,
     input [11:0] csr_addr_in,
     input mret_in,
     input wfi_in,
@@ -56,7 +56,7 @@ module execute (
     output reg load_signed_out,
     // WB
     output reg [1:0] write_select_out,
-    output reg [5:0] rd_addr_out,
+    output reg [4:0] rd_addr_out,
     output reg [11:0] csr_addr_out,
     output reg mret_out,
     output reg wfi_out,
