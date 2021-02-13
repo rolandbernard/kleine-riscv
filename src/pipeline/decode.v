@@ -30,7 +30,7 @@ module decode (
     output reg [31:0] data_rs2,
     output reg [31:0] data_csr,
     output reg [31:0] data_imm,
-    output reg [5:0] data_uimm,
+    output reg [4:0] data_uimm,
     output reg [2:0] alu_func,
     output reg alu_func_sel,
     output reg [1:0] alu_a_select,
@@ -51,7 +51,7 @@ module decode (
     output reg load_signed,
     // WB
     output reg [1:0] write_select,
-    output reg [5:0] rd_addr,
+    output reg [4:0] rd_addr,
     output reg [11:0] csr_addr,
     output reg mret,
     output reg wfi,
@@ -95,126 +95,83 @@ always @(posedge clk) begin
                 7'b0100011 : data_imm <= {{20{instr[31]}}, instr[31:25], instr[11:7]}; // S-type
                 7'b0100011 : data_imm <= {{19{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0}; // B-type
             endcase
+            // Default signals
+            alu_func <= ALU_OR;
+            alu_func_sel <= 1'b0;
+            alu_a_select <= ALU_SEL_ZERO;
+            alu_b_select <= ALU_SEL_ZERO;
+            write_select <= WRITE_SEL_ALU;
+            branch <= 1'b0;
+            load <= 1'b0;
+            store <= 1'b0;
+            rd_addr <= 5'b00000;
+            read_csr <= 1'b0;
+            write_csr <= 1'b0;
+            mret <= 1'b0;
+            wfi <= 1'b0;
+            ecause <= 0;
+            exception <= 0;
             // Decode controll signals
             case (instr[6:0])
                 7'b0110111 : begin // LUI
-                    alu_func <= ALU_OR;
-                    alu_a_select <= ALU_SEL_ZERO;
                     alu_b_select <= ALU_SEL_IMM;
-                    write_select <= WRITE_SEL_ALU;
-                    branch <= 1'b0;
-                    load <= 1'b0;
-                    store <= 1'b0;
                     rd_addr <= instr[11:7];
-                    read_csr <= 1'b0;
-                    write_csr <= 1'b0;
-                    exception <= 1'b0;
-                    mret <= 1'b0;
-                    wfi <= 1'b0;
                 end
                 7'b0110111 : begin // AUIPC
                     alu_func <= ALU_ADD_SUB;
-                    alu_func_sel <= 1'b0;
                     alu_a_select <= ALU_SEL_PC_CSR;
                     alu_b_select <= ALU_SEL_IMM;
-                    write_select <= WRITE_SEL_ALU;
-                    branch <= 1'b0;
-                    load <= 1'b0;
-                    store <= 1'b0;
                     rd_addr <= instr[11:7];
-                    read_csr <= 1'b0;
-                    write_csr <= 1'b0;
-                    exception <= 1'b0;
-                    mret <= 1'b0;
-                    wfi <= 1'b0;
                 end
                 7'b0110111 : begin // JAL
                     alu_func <= ALU_ADD_SUB;
-                    alu_func_sel <= 1'b0;
                     alu_a_select <= ALU_SEL_PC_CSR;
                     alu_b_select <= ALU_SEL_IMM;
                     write_select <= WRITE_SEL_NEXT_PC;
                     branch <= 1'b1;
                     jump <= 1'b1;
-                    load <= 1'b0;
-                    store <= 1'b0;
                     rd_addr <= instr[11:7];
-                    read_csr <= 1'b0;
-                    write_csr <= 1'b0;
-                    exception <= 1'b0;
-                    mret <= 1'b0;
-                    wfi <= 1'b0;
                 end
                 7'b1100111 : begin // JALR
                     alu_func <= ALU_ADD_SUB;
-                    alu_func_sel <= 1'b0;
                     alu_a_select <= ALU_SEL_REG;
                     alu_b_select <= ALU_SEL_IMM;
                     write_select <= WRITE_SEL_NEXT_PC;
                     branch <= 1'b1;
                     jump <= 1'b1;
-                    load <= 1'b0;
-                    store <= 1'b0;
                     rd_addr <= instr[11:7];
-                    read_csr <= 1'b0;
-                    write_csr <= 1'b0;
-                    mret <= 1'b0;
                     ecause <= 2;
                     exception <= (instr[14:12] != 3'b000);
                 end
                 7'b1100011 : begin // Branch
                     alu_func <= ALU_ADD_SUB;
-                    alu_func_sel <= 1'b0;
                     alu_a_select <= ALU_SEL_PC_CSR;
                     alu_b_select <= ALU_SEL_IMM;
                     branch <= 1'b1;
-                    jump <= 1'b0;
-                    load <= 1'b0;
-                    store <= 1'b0;
-                    rd_addr <= 5'b00000;
-                    read_csr <= 1'b0;
-                    write_csr <= 1'b0;
                     cmp_less <= instr[14];
                     cmp_sign <= instr[13];
                     cmp_negate <= instr[12];
-                    mret <= 1'b0;
-                    wfi <= 1'b0;
                     ecause <= 2;
                     exception <= (instr[14:13] == 2'b01);
                 end
                 7'b0000011 : begin // LOAD
                     alu_func <= ALU_ADD_SUB;
-                    alu_func_sel <= 1'b0;
                     alu_a_select <= ALU_SEL_REG;
                     alu_b_select <= ALU_SEL_IMM;
                     write_select <= WRITE_SEL_LOAD;
-                    branch <= 1'b0;
                     load <= 1'b1;
-                    store <= 1'b0;
                     rd_addr <= instr[11:7];
-                    read_csr <= 1'b0;
-                    write_csr <= 1'b0;
                     load_store_size <= instr[13:12];
                     load_signed <= !instr[14];
-                    mret <= 1'b0;
-                    wfi <= 1'b0;
                     ecause <= 2;
                     exception <= (instr[13:12] == 2'b11 || (instr[14] && instr[13:12] == 2'b10));
                 end
                 7'b0100011 : begin // STORE
                     alu_func <= ALU_ADD_SUB;
-                    alu_func_sel <= 1'b0;
                     alu_a_select <= ALU_SEL_REG;
                     alu_b_select <= ALU_SEL_IMM;
-                    branch <= 1'b0;
-                    load <= 1'b0;
                     store <= 1'b1;
-                    rd_addr <= 5'b00000;
-                    read_csr <= 1'b0;
-                    write_csr <= 1'b0;
                     load_store_size <= instr[13:12];
-                    mret <= 1'b0;
-                    wfi <= 1'b0;
                     ecause <= 2;
                     exception <= (instr[13:12] == 2'b11 || instr[14]);
                 end
@@ -224,15 +181,7 @@ always @(posedge clk) begin
                     alu_a_select <= ALU_SEL_REG;
                     alu_b_select <= ALU_SEL_IMM;
                     write_select <= WRITE_SEL_ALU;
-                    branch <= 1'b0;
-                    load <= 1'b0;
-                    store <= 1'b0;
                     rd_addr <= instr[11:7];
-                    read_csr <= 1'b0;
-                    write_csr <= 1'b0;
-                    exception <= 1'b0;
-                    mret <= 1'b0;
-                    wfi <= 1'b0;
                 end
                 7'b0110011 : begin // OP
                     alu_func <= instr[14:12];
@@ -240,68 +189,34 @@ always @(posedge clk) begin
                     alu_a_select <= ALU_SEL_REG;
                     alu_b_select <= ALU_SEL_REG;
                     write_select <= WRITE_SEL_ALU;
-                    branch <= 1'b0;
-                    load <= 1'b0;
-                    store <= 1'b0;
                     rd_addr <= instr[11:7];
-                    read_csr <= 1'b0;
-                    write_csr <= 1'b0;
-                    mret <= 1'b0;
-                    wfi <= 1'b0;
                     ecause <= 2;
                     exception <= (instr[31:25] != 0 && (instr[31:25] != 7'b0100000 || (instr[14:12] != 3'b000 && instr[14:12] != 3'b101)));
                 end
                 7'b0001111 : begin // FENCE
-                    branch <= 1'b0;
-                    load <= 1'b0;
-                    store <= 1'b0;
-                    rd_addr <= 5'b00000;
-                    read_csr <= 1'b0;
-                    write_csr <= 1'b0;
-                    exception <= 1'b0;
                     ecause <= 2;
                     exception <= (instr[14:12] != 3'b000);
-                    mret <= 1'b0;
-                    wfi <= 1'b0;
                 end
                 7'b1110011 : begin // SYSTEM
                     case (instr[14:12])
                         3'b000: begin // PRIV
                             case (instr[24:20])
                                 5'b00000: begin // ECALL
-                                    rd_addr <= 5'b00000;
-                                    read_csr <= 1'b0;
-                                    write_csr <= 1'b0;
                                     ecause <= (instr[31:25] != 7'b0000000 || instr[19:15] != 5'b00000 || instr[11:7] != 5'b00000) ? 2 : 11;
                                     exception <= 1'b1;
-                                    mret <= 1'b0;
-                                    wfi <= 1'b0;
                                 end
                                 5'b00001: begin // EBREAK
-                                    rd_addr <= 5'b00000;
-                                    read_csr <= 1'b0;
-                                    write_csr <= 1'b0;
                                     ecause <= (instr[31:25] != 7'b0000000 || instr[19:15] != 5'b00000 || instr[11:7] != 5'b00000) ? 2 : 3;
                                     exception <= 1'b1;
-                                    mret <= 1'b0;
-                                    wfi <= 1'b0;
                                 end
                                 5'b00010: begin // MRET
-                                    rd_addr <= 5'b00000;
-                                    read_csr <= 1'b0;
-                                    write_csr <= 1'b0;
                                     ecause <= 2;
                                     exception <= (instr[31:25] != 7'b0011000 || instr[19:15] != 5'b00000 || instr[11:7] != 5'b00000);
                                     mret <= 1'b1;
-                                    wfi <= 1'b0;
                                 end
                                 5'b00101: begin // WFI
-                                    rd_addr <= 5'b00000;
-                                    read_csr <= 1'b0;
-                                    write_csr <= 1'b0;
                                     ecause <= 2;
                                     exception <= (instr[31:25] != 7'b0001000 || instr[19:15] != 5'b00000 || instr[11:7] != 5'b00000);
-                                    mret <= 1'b0;
                                     wfi <= 1'b1;
                                 end
                                 default: begin
@@ -309,20 +224,12 @@ always @(posedge clk) begin
                                     exception <= 1'b1;
                                 end
                             endcase
-                            rd_addr <= 5'b00000;
-                            read_csr <= 1'b0;
-                            write_csr <= 1'b0;
                         end
                         3'b001: begin // CSRRW
                             rd_addr <= instr[11:7];
-                            alu_func <= ALU_OR;
                             alu_a_select <= ALU_SEL_REG;
-                            alu_b_select <= ALU_SEL_ZERO;
                             read_csr <= (instr[11:7] != 0);
                             write_csr <= 1'b1;
-                            exception <= 1'b0;
-                            mret <= 1'b0;
-                            wfi <= 1'b0;
                         end
                         3'b001: begin // CSRRS
                             rd_addr <= instr[11:7];
@@ -331,9 +238,6 @@ always @(posedge clk) begin
                             alu_b_select <= ALU_SEL_PC_CSR;
                             read_csr <= 1'b1;
                             write_csr <= (instr[19:15] != 0);
-                            exception <= 1'b0;
-                            mret <= 1'b0;
-                            wfi <= 1'b0;
                         end
                         3'b001: begin // CSRRC
                             rd_addr <= instr[11:7];
@@ -343,20 +247,12 @@ always @(posedge clk) begin
                             alu_b_select <= ALU_SEL_PC_CSR;
                             read_csr <= 1'b1;
                             write_csr <= (instr[19:15] != 0);
-                            exception <= 1'b0;
-                            mret <= 1'b0;
-                            wfi <= 1'b0;
                         end
                         3'b001: begin // CSRRWI
                             rd_addr <= instr[11:7];
-                            alu_func <= ALU_OR;
                             alu_a_select <= ALU_SEL_IMM;
-                            alu_b_select <= ALU_SEL_ZERO;
                             read_csr <= (instr[11:7] != 0);
                             write_csr <= 1'b1;
-                            exception <= 1'b0;
-                            mret <= 1'b0;
-                            wfi <= 1'b0;
                         end
                         3'b001: begin // CSRRSI
                             rd_addr <= instr[11:7];
@@ -365,9 +261,6 @@ always @(posedge clk) begin
                             alu_b_select <= ALU_SEL_PC_CSR;
                             read_csr <= 1'b1;
                             write_csr <= (instr[19:15] != 0);
-                            exception <= 1'b0;
-                            mret <= 1'b0;
-                            wfi <= 1'b0;
                         end
                         3'b001: begin // CSRRCI
                             rd_addr <= instr[11:7];
@@ -377,18 +270,12 @@ always @(posedge clk) begin
                             alu_b_select <= ALU_SEL_PC_CSR;
                             read_csr <= 1'b1;
                             write_csr <= (instr[19:15] != 0);
-                            exception <= 1'b0;
-                            mret <= 1'b0;
-                            wfi <= 1'b0;
                         end
                         default: begin
                             ecause <= 2;
                             exception <= 1'b1;
                         end
                     endcase
-                    branch <= 1'b0;
-                    load <= 1'b0;
-                    store <= 1'b0;
                 end
                 default : begin
                     ecause <= 2;
