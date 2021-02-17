@@ -1,9 +1,9 @@
 module execute (
     input clk,
-    // Misc
+    // from decode
     input [31:0] pc_in,
     input [31:0] next_pc_in,
-    // EX
+    // from decode (control EX)
     input [31:0] rs1_data,
     input [31:0] rs2_data_in,
     input [31:0] csr_data_in,
@@ -22,30 +22,30 @@ module execute (
     input write_csr,
     input readable_csr,
     input writeable_csr,
-    // MEM
+    // from decode (control MEM)
     input load_in,
     input store_in,
     input [1:0] load_store_size_in,
     input load_signed_in,
-    // WB
+    // from decode (control WB)
     input [1:0] write_select_in,
     input [4:0] rd_addr_in,
     input [11:0] csr_addr_in,
     input mret_in,
     input wfi_in,
-
+    // from decode
     input valid_in,
     input [3:0] ecause_in,
     input exception_in,
     
+    // from hazard
     input stall,
     input invalidate,
-    output [4:0] data_hazard,
 
-    // Misc
+    // to memory
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
-    // MEM
+    // to memory (control MEM)
     output reg [31:0] alu_data,
     output reg [31:0] rs2_data_out,
     output reg [31:0] csr_data_out,
@@ -54,13 +54,13 @@ module execute (
     output reg store_out,
     output reg [1:0] load_store_size_out,
     output reg load_signed_out,
-    // WB
+    // to memory (control WB)
     output reg [1:0] write_select_out,
     output reg [4:0] rd_addr_out,
     output reg [11:0] csr_addr_out,
     output reg mret_out,
     output reg wfi_out,
-
+    // to memory
     output reg valid_out,
     output reg [3:0] ecause_out,
     output reg exception_out,
@@ -70,6 +70,7 @@ module execute (
 
 wire to_execute = !exception_in && valid_in;
 assign data_hazard = to_execute ? rd_addr_in : 5'b00000;
+assign csr_hazard = to_execute && write_csr;
 
 wire cmp_output;
 cmp ex_cmp (

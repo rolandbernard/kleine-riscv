@@ -1,31 +1,36 @@
 module decode (
     input clk,
+
+    // from fetch
     input [31:0] pc_in,
     input [31:0] next_pc_in,
     input [31:0] instr,
     input valid_in,
 
-    input stall_in,
+    // from hazard
+    input stall,
     input invalidate,
-    input [4:0] data_hazard_0,
-    input [4:0] data_hazard_1,
 
+    // to regfile
     output [4:0] rs1_select,
     output [4:0] rs2_select,
+
+    // from regfile
     input [31:0] rs1_data,
     input [31:0] rs2_data,
     
+    // to csr
     output [11:0] csr_select,
     input [31:0] csr_data,
+
+    // from csr
     input csr_readable,
     input csr_writeable,
-    
-    output stall_out,
 
-    // Misc
+    // to execute
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
-    // EX
+    // to execute (control EX)
     output reg [31:0] data_rs1,
     output reg [31:0] data_rs2,
     output reg [31:0] data_csr,
@@ -44,18 +49,18 @@ module decode (
     output reg write_csr,
     output reg readable_csr,
     output reg writeable_csr,
-    // MEM
+    // to execute (control MEM)
     output reg load,
     output reg store,
     output reg [1:0] load_store_size,
     output reg load_signed,
-    // WB
+    // to execute (control WB)
     output reg [1:0] write_select,
     output reg [4:0] rd_addr,
     output reg [11:0] csr_addr,
     output reg mret,
     output reg wfi,
-    
+    // to execute
     output reg valid_out,
     output reg [3:0] ecause,
     output reg exception,

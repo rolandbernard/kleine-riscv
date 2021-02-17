@@ -33,3 +33,4 @@ $(BIN)/%: $(UTEST)/%.cpp $(RTL)/%.cpp
 RUNTEST.$(BIN)/%: $(BIN)/%
 	@echo "Running test $(notdir $<)"
 	@$<
+

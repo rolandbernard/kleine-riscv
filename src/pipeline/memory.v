@@ -1,9 +1,9 @@
 module memory (
     input clk,
-    // Misc
+    // from execute
     input [31:0] pc_in,
     input [31:0] next_pc_in,
-    // MEM
+    // from execute (control MEM)
     input [31:0] alu_data_in,
     input [31:0] rs2_data,
     input [31:0] csr_data_in,
@@ -12,37 +12,38 @@ module memory (
     input store,
     input [1:0] load_store_size,
     input load_signed,
-    // WB
+    // from execute (control WB)
     input [1:0] write_select_in,
     input [4:0] rd_addr_in,
     input [11:0] csr_addr_in,
     input mret_in,
     input wfi_in,
-
+    // from execute
     input valid_in,
     input [3:0] ecause_in,
     input exception_in,
     
-    input stall_in,
+    // from hazard
+    input stall,
     input invalidate,
 
-    output [4:0] data_hazard,
-    output stall_out,
-
+    // to busio
     output [31:0] mem_addr,
     output [31:0] mem_store_data,
     output mem_load,
     output mem_store,
-    input [31:0] mem_load_data,
-    input mem_ready,
     
+    // from busio
+    input [31:0] mem_load_data,
+    
+    // to fetch
     output branch_taken_out,
     output branch_address,
 
-    // Misc
+    // to writeback
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
-    // WB
+    // to writeback (control WB)
     output reg [31:0] alu_data_out,
     output reg [31:0] csr_data_out,
     output reg [31:0] load_data_out,
@@ -51,7 +52,7 @@ module memory (
     output reg [11:0] csr_addr_out,
     output reg mret_out,
     output reg wfi_out,
-
+    // to writeback
     output reg valid_out,
     output reg [3:0] ecause_out,
     output reg exception_out,
@@ -59,6 +60,7 @@ module memory (
 
 wire to_execute = !exception_in && valid_in;
 assign data_hazard = to_execute ? rd_addr_in : 5'b00000;
+assign csr_hazard = to_execute && write_csr;
 
 wire valid_branch_address = (alu_data_in[1:0] == 2'b00);
 reg valid_mem_address;
@@ -75,16 +77,14 @@ end
 assign branch_taken_out = valid_branch_address && branch_taken_in;
 assign branch_address = alu_data_in;
 
-assign stall_out = stall_in || !mem_ready;
-
 assign mem_load = to_execute && valid_mem_address && load;
 assign mem_store = to_execute && valid_mem_address && store;
 assign mem_addr = alu_data_in;
 assign mem_store_data = rs2_data;
 
 always @(posedge clk) begin
-    if (!stall_in) begin
-        if (valid_in && mem_ready && !invalidate) begin
+    if (!stall) begin
+        if (valid_in && !invalidate) begin
             pc_out <= pc_in;
             next_pc_out <= next_pc_in;
             alu_data_out <= alu_data_in;

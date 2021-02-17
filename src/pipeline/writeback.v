@@ -1,9 +1,9 @@
 module writeback (
     input clk,
-    // Misc
+    // from memory
     input [31:0] pc,
     input [31:0] next_pc,
-    // WB
+    // from memory (control WB)
     input [31:0] alu_data,
     input [31:0] csr_data,
     input [31:0] load_data,
@@ -11,33 +11,34 @@ module writeback (
     input [4:0] rd_addr_in,
     input [11:0] csr_addr,
     input mret,
-    input wfi_in,
-
+    input wfi,
+    // from memory
     input valid,
     input [3:0] ecause_in,
     input exception,
     
+    // from csr
     input sip,
     input tip,
     input eip,
 
+    // to regfile
     output [4:0] rd_addr_out,
     output reg [31:0] rd_data,
 
-    output stall,
+    // to fetch
     output traped,
+
+    // to csr
     output reg ecause,
     output reg interupt,
     output [31:0] ecp,
 );
 
 `include "../params.vh"
-    
-reg wfi = 0;
 
-assign stall = wfi;
 assign traped = (sip || tip || eip || exception);
-assign ecp = pc;
+assign ecp = wfi ? next_pc : pc;
 
 always @(*) begin
     if (eip) begin
@@ -67,14 +68,6 @@ always @(*) begin
         WRITE_SEL_LOAD: rd_data = load_data;
         WRITE_SEL_NEXT_PC: rd_data = next_pc;
     endcase
-end
-
-always @(posedge clk) begin
-    if (traped) begin
-        wfi <= 1'b0;
-    end else begin
-        wfi <= wfi_in;
-    end
 end
 
 endmodule

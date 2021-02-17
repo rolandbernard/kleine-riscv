@@ -1,18 +1,28 @@
 module fetch (
     input clk,
     input reset,
+
+    // from memory
     input branch,
     input [31:0] branch_vec,
+    
+    // from writeback
     input trap,
+
+    // from csr
     input [31:0] trap_vec,
 
+    // from hazard
     input stall,
     input invalidate,
     
+    // to busio
     output [31:0] fetch_addr,
+    
+    // from busio
     input [31:0] fetch_data,
-    input fetch_ready,
 
+    // to decode
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
     output reg [31:0] instr,
@@ -32,7 +42,7 @@ always @(posedge clk) begin
     end else if (branch) begin
         pc <= branch_vec;
     end else begin
-        pc <= (stall || !fetch_ready) ? pc : next_pc;
+        pc <= stall ? pc : next_pc;
     end
 end
 
