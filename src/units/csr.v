@@ -1,12 +1,14 @@
 module csr (
-    input [11:0] csr_read_address,
-    input csr_readable,
-    input csr_writeable,
+    // read port
+    input [11:0] read_address,
+    output [31:0] read_data,
+    output readable,
+    output writeable,
     
-    input csr_write_enable,
-    input [11:0] csr_write_address,
-    input [11:0] csr_write_address,
-    
+    // write port
+    input write_enable,
+    input [11:0] write_address,
+    input [31:0] write_data,
 );
 
 

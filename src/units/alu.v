@@ -1,8 +1,10 @@
 module alu (
     input [31:0] input_a,
     input [31:0] input_b,
+
     input [2:0] function_select,
     input function_modifier,
+
     output reg [31:0] result,
 );
 
