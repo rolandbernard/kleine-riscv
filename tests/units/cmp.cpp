@@ -27,16 +27,14 @@ int main() {
         bool less = rand() < RAND_MAX / 2;
         bool sign = rand() < RAND_MAX / 2;
         bool negate = rand() < RAND_MAX / 2;
-        top.p_in1.set<uint32_t>(in1);
-        top.p_in2.set<uint32_t>(in2);
+        top.p_input__a.set<uint32_t>(in1);
+        top.p_input__b.set<uint32_t>(in2);
 
-        top.p_less.set<bool>(less);
-        top.p_sign.set<bool>(sign);
-        top.p_negate.set<bool>(negate);
+        top.p_function__select.set<uint32_t>((less << 2) | (sign << 1) | (negate));
 
         top.step();
 
-        bool out = top.p_out.get<bool>();
+        bool out = top.p_result.get<bool>();
 
         bool expected;
         switch ((less << 2) | (sign << 1) | (negate)) {

@@ -39,14 +39,14 @@ int main() {
         if (func == ALU_SLL || func == ALU_SRL_SRA) {
             in2 %= 32;
         }
-        top.p_in1.set<uint32_t>(in1);
-        top.p_in2.set<uint32_t>(in2);
-        top.p_func.set<uint32_t>(func);
-        top.p_func__sel.set<uint32_t>(func_sel);
+        top.p_input__a.set<uint32_t>(in1);
+        top.p_input__b.set<uint32_t>(in2);
+        top.p_function__select.set<uint32_t>(func);
+        top.p_function__modifier.set<uint32_t>(func_sel);
 
         top.step();
 
-        uint32_t out = top.p_out.get<uint32_t>();
+        uint32_t out = top.p_result.get<uint32_t>();
         
         switch (func) {
         case ALU_ADD_SUB:
