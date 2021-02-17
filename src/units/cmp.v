@@ -1,16 +1,18 @@
 module cmp (
-    input [31:0] in1,
-    input [31:0] in2,
-    input less,
-    input sign,
-    input negate,
-    output out,
+    input [31:0] input_a,
+    input [31:0] input_b,
+    input [2:0] function_select,
+    output result,
 );
 
-wire is_equal = (in1 == in2);
-wire is_less = ($signed({sign ? in1[31] : 1'b0, in1}) < $signed({sign ? in2[31] : 1'b0, in2}));
-wire func_out = less ? is_less : is_equal;
+wire less = function_select[2];
+wire sign = function_select[1];
+wire negate = function_select[0];
 
-assign out = negate ? !func_out : func_out;
+wire is_equal = (input_a == input_b);
+wire is_less = ($signed({sign ? input_a[31] : 1'b0, input_a}) < $signed({sign ? input_b[31] : 1'b0, input_b}));
+wire quasi_result = less ? is_less : is_equal;
+
+assign result = negate ? !quasi_result : quasi_result;
 
 endmodule

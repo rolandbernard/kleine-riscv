@@ -1,22 +1,29 @@
 module alu (
-    input [31:0] in1,
-    input [31:0] in2,
-    input [2:0] func,
-    input func_sel,
-    output reg [31:0] out,
+    input [31:0] input_a,
+    input [31:0] input_b,
+    input [2:0] function_select,
+    input function_modifier,
+    output reg [31:0] result,
 );
 
 `include "../params.vh"
 
 always @(*) begin
-    case (func)
-        ALU_ADD_SUB: out = in1 + (func_sel ? -in2 : in2);
-        ALU_SLL: out = in1 << in2[4:0];
-        ALU_SLT, ALU_SLTU: out = {{31{1'b0}}, ($signed({func[0] ? 1'b0 : in1[31], in1}) < $signed({func[0] ? 1'b0 : in2[31], in2}))}; 
-        ALU_XOR: out = in1 ^ in2;
-        ALU_SRL_SRA: out = $signed({func_sel ? in1[31] : 1'b0, in1}) >>> in2[4:0];
-        ALU_OR: out = in1 | in2;
-        ALU_AND_CLR: out = (func_sel ? ~in1 : in1) & in2;
+    case (function_select)
+        ALU_ADD_SUB: result = input_a + (function_modifier ? -input_b : input_b);
+        ALU_SLL:     result = input_a << input_b[4:0];
+        ALU_SLT,
+        ALU_SLTU:    result = {
+            {31{1'b0}},
+            (
+                $signed({function_select[0] ? 1'b0 : input_a[31], input_a})
+                < $signed({function_select[0] ? 1'b0 : input_b[31], input_b})
+            )
+        }; 
+        ALU_XOR:     result = input_a ^ input_b;
+        ALU_SRL_SRA: result = $signed({function_modifier ? input_a[31] : 1'b0, input_a}) >>> input_b[4:0];
+        ALU_OR:      result = input_a | input_b;
+        ALU_AND_CLR: result = (function_modifier ? ~input_a : input_a) & input_b;
     endcase
 end
 

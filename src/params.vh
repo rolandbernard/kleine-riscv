@@ -14,6 +14,13 @@ localparam ALU_SEL_IMM    = 2'b01;
 localparam ALU_SEL_PC_CSR = 2'b10;
 localparam ALU_SEL_ZERO   = 2'b11;
 
+localparam CMP_EQ  = 3'b000;
+localparam CMP_NE  = 3'b001;
+localparam CMP_LT  = 3'b110;
+localparam CMP_GE  = 3'b111;
+localparam CMP_LTU = 3'b100;
+localparam CMP_GEU = 3'b101;
+
 localparam WRITE_SEL_ALU     = 2'b00;
 localparam WRITE_SEL_CSR     = 2'b01;
 localparam WRITE_SEL_LOAD    = 2'b10;
