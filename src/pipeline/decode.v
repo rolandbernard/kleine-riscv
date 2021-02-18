@@ -69,7 +69,7 @@ assign rs1_address = instr[19:15];
 assign rs2_address = instr[24:20];
 assign csr_address = instr[31:20];
                 
-wire [31:0] rd_address = instr[11:7];
+wire [4:0] rd_address = instr[11:7];
 
 // possible immediate values
 wire [31:0] u_type_imm_data = {instr[31:12], 12'b0};
@@ -168,7 +168,7 @@ always @(posedge clk) begin
                 7'b0100011 : begin // STORE
                     alu_function_out <= ALU_ADD_SUB;
                     alu_select_a_out <= ALU_SEL_REG;
-                    imm_data_out <= b_type_imm_data;
+                    imm_data_out <= s_type_imm_data;
                     store_out <= 1;
                     load_store_size_out <= instr[13:12];
                     if (instr[13:12] == 2'b11 || instr[14]) begin
@@ -180,6 +180,7 @@ always @(posedge clk) begin
                     alu_function_out <= instr[14:12];
                     alu_function_modifier_out <= (instr[14:12] == 3'b101 && instr[30]);
                     alu_select_a_out <= ALU_SEL_REG;
+                    imm_data_out <= i_type_imm_data;
                     write_select_out <= WRITE_SEL_ALU;
                     rd_address_out <= rd_address;
                 end
