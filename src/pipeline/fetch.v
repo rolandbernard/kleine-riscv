@@ -4,43 +4,46 @@ module fetch (
 
     // from memory
     input branch,
-    input [31:0] branch_vec,
+    input [31:0] branch_vector,
     
     // from writeback
     input trap,
+    input mret,
 
     // from csr
-    input [31:0] trap_vec,
+    input [31:0] trap_vector,
+    input [31:0] mret_vector,
 
     // from hazard
     input stall,
     input invalidate,
     
     // to busio
-    output [31:0] fetch_addr,
-    
+    output [31:0] fetch_address,
     // from busio
     input [31:0] fetch_data,
 
     // to decode
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
-    output reg [31:0] instr,
-    output reg valid,
+    output reg [31:0] instruction_out,
+    output reg valid_out,
 );
 
 reg [31:0] pc;
 
-assign fetch_addr = pc;
+assign fetch_address = pc;
 wire next_pc = pc + 4;
 
 always @(posedge clk) begin
     if (reset) begin
-        pc <= 32'h00000000;
+        pc <= 0;
     end else if (trap) begin
-        pc <= trap_vec;
+        pc <= trap_vector;
+    end else if (mret) begin
+        pc <= mret_vector;
     end else if (branch) begin
-        pc <= branch_vec;
+        pc <= branch_vector;
     end else begin
         pc <= stall ? pc : next_pc;
     end
@@ -48,13 +51,13 @@ end
 
 always @(posedge clk) begin
     if (!stall) begin
-        if (fetch_ready && !invalidate) begin
+        if (!invalidate) begin
             pc_out <= pc;
             next_pc_out <= next_pc;
-            instr <= fetch_data;
-            valid <= 1'b1;
+            instruction_out <= fetch_data;
+            valid_out <= 1;
         end else begin
-            valid <= 1'b0;
+            valid_out <= 0;
         end
     end
 end
