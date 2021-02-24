@@ -10,6 +10,7 @@ module writeback (
     input [1:0] write_select_in,
     input [4:0] rd_address_in,
     input [11:0] csr_address_in,
+    input csr_write_in,
     input mret_in,
     input wfi_in,
     // from memory
@@ -25,6 +26,11 @@ module writeback (
     // to regfile
     output [4:0] rd_address,
     output reg [31:0] rd_data,
+
+    // to csr
+    output csr_write,
+    output [11:0] csr_address,
+    output [31:0] csr_data,
 
     // to fetch and csr and hazard
     output traped,
@@ -77,5 +83,9 @@ always @(*) begin
         WRITE_SEL_NEXT_PC: rd_data = next_pc_in;
     endcase
 end
+
+assign csr_write = to_execute && !traped && csr_write_in;
+assign csr_address = csr_address_in;
+assign csr_data = alu_data_in;
 
 endmodule

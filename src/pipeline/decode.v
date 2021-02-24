@@ -80,6 +80,7 @@ wire [31:0] b_type_imm_data = {{19{instr[31]}}, instr[7], instr[30:25], instr[11
 wire [31:0] csr_type_imm_data = {27'b0, rs1_address};
 
 always @(posedge clk) begin
+    valid_out <= 0;
     if (!stall) begin
         if (valid_in && !invalidate) begin
             pc_out <= pc_in;
@@ -295,8 +296,6 @@ always @(posedge clk) begin
                     exception_out <= 1;
                 end
             endcase
-        end else begin
-            valid_out <= 1'b0;
         end
     end
 end

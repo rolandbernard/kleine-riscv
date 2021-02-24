@@ -1,27 +1,28 @@
 module memory (
     input clk,
     // from execute
-    output reg [31:0] pc_in,
-    output reg [31:0] next_pc_in,
+    input [31:0] pc_in,
+    input [31:0] next_pc_in,
     // from execute (control MEM)
-    output reg [31:0] alu_data_in,
-    output reg [31:0] rs2_data_in,
-    output reg [31:0] csr_data_in,
-    output reg branch_taken_in,
-    output reg load_in,
-    output reg store_in,
-    output reg [1:0] load_store_size_in,
-    output reg load_signed_in,
+    input [31:0] alu_data_in,
+    input [31:0] rs2_data_in,
+    input [31:0] csr_data_in,
+    input branch_taken_in,
+    input load_in,
+    input store_in,
+    input [1:0] load_store_size_in,
+    input load_signed_in,
     // from execute (control WB)
-    output reg [1:0] write_select_in,
-    output reg [4:0] rd_address_in,
-    output reg [11:0] csr_address_in,
-    output reg mret_in,
-    output reg wfi_in,
+    input [1:0] write_select_in,
+    input [4:0] rd_address_in,
+    input [11:0] csr_address_in,
+    input csr_write_in,
+    input mret_in,
+    input wfi_in,
     // from execute
-    output reg valid_in,
-    output reg [3:0] ecause_in,
-    output reg exception_in,
+    input valid_in,
+    input [3:0] ecause_in,
+    input exception_in,
     
     // from hazard
     input stall,
@@ -52,6 +53,7 @@ module memory (
     output reg [1:0] write_select_out,
     output reg [4:0] rd_address_out,
     output reg [11:0] csr_address_out,
+    output csr_write_out,
     output reg mret_out,
     output reg wfi_out,
     // to writeback
@@ -85,6 +87,7 @@ assign mem_address = alu_data_in;
 assign mem_store_data = rs2_data_in;
 
 always @(posedge clk) begin
+        valid_out <= 0;
     if (!stall) begin
         if (valid_in && !invalidate) begin
             pc_out <= pc_in;
@@ -107,8 +110,6 @@ always @(posedge clk) begin
                 ecause_out <= ecause_in;
                 exception_out <= exception_in;
             end
-            valid_out <= 0;
-        end else begin
             valid_out <= 1;
         end
     end

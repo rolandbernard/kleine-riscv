@@ -50,14 +50,13 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
+    valid_out <= 0;
     if (!stall) begin
         if (!invalidate) begin
             pc_out <= pc;
             next_pc_out <= next_pc;
             instruction_out <= fetch_data;
             valid_out <= 1;
-        end else begin
-            valid_out <= 0;
         end
     end
 end

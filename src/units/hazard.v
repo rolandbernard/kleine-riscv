@@ -2,20 +2,19 @@ module hazard (
     // from decode
     input [4:0] rs1_address_decode,
     input [4:0] rs2_address_decode,
-    input [4:0] csr_address_decode,
 
     // from execute
     input [4:0] rd_address_execute,
-    input [4:0] csr_address_execute,
+    input csr_write_execute,
         
     // from memory
     input [4:0] rd_address_memory,
-    input [4:0] csr_address_memory,
+    input csr_write_memory,
     input branch_taken,
     input mret_memory,
 
     // from writeback
-    input [4:0] csr_address_writeback,
+    input csr_write_writeback,
     input mret_writeback,
     input traped,
 
@@ -46,15 +45,13 @@ assign stall_decode = stall_execute
     || rs2_address_decode == rd_address_execute
     || rs1_address_decode == rd_address_memory
     || rs2_address_decode == rd_address_memory
-    || csr_address_decode == csr_address_execute
-    || csr_address_decode == csr_address_memory
-    || csr_address_decode == csr_address_writeback;
+    || csr_write_execute || csr_
 assign stall_execute = stall_memory;
 assign stall_memory = !mem_ready;
 
 assign invalidate_fetch = invalidate_decode;
-assign invalidate_decode = stall_fetch || invalidate_execute;
-assign invalidate_execute = stall_decode || invalidate_memory || mret_memory;
-assign invalidate_memory = stall_execute || branch_taken || mret_writeback || traped;
+assign invalidate_decode = invalidate_execute;
+assign invalidate_execute = invalidate_memory || mret_memory;
+assign invalidate_memory = branch_taken || mret_writeback || traped;
 
 endmodule

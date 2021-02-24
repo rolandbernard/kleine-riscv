@@ -56,6 +56,7 @@ module execute (
     output reg [1:0] write_select_out,
     output reg [4:0] rd_address_out,
     output reg [11:0] csr_address_out,
+    input csr_write_out,
     output reg mret_out,
     output reg wfi_out,
     // to memory
@@ -104,6 +105,7 @@ alu ex_alu (
 wire csr_exception = ((csr_read_in && !csr_readable_in) || (csr_write_in && !csr_writeable_in));
 
 always @(posedge clk) begin
+    valid_out <= 0;
     if (!stall) begin
         if (valid_in && !invalidate) begin
             pc_out <= pc_in;
@@ -129,8 +131,6 @@ always @(posedge clk) begin
                 ecause_out <= ecause_in;
                 exception_out <= exception_in;
             end
-            valid_out <= 0;
-        end else begin
             valid_out <= 1;
         end
     end
