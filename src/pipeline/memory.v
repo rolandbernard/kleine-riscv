@@ -1,27 +1,27 @@
 module memory (
     input clk,
     // from execute
-    input [31:0] pc_in,
-    input [31:0] next_pc_in,
+    output reg [31:0] pc_in,
+    output reg [31:0] next_pc_in,
     // from execute (control MEM)
-    input [31:0] alu_data_in,
-    input [31:0] rs2_data,
-    input [31:0] csr_data_in,
-    input branch_taken_in,
-    input load,
-    input store,
-    input [1:0] load_store_size,
-    input load_signed,
+    output reg [31:0] alu_data_in,
+    output reg [31:0] rs2_data_in,
+    output reg [31:0] csr_data_in,
+    output reg branch_taken_in,
+    output reg load_in,
+    output reg store_in,
+    output reg [1:0] load_store_size_in,
+    output reg load_signed_in,
     // from execute (control WB)
-    input [1:0] write_select_in,
-    input [4:0] rd_addr_in,
-    input [11:0] csr_addr_in,
-    input mret_in,
-    input wfi_in,
+    output reg [1:0] write_select_in,
+    output reg [4:0] rd_address_in,
+    output reg [11:0] csr_address_in,
+    output reg mret_in,
+    output reg wfi_in,
     // from execute
-    input valid_in,
-    input [3:0] ecause_in,
-    input exception_in,
+    output reg valid_in,
+    output reg [3:0] ecause_in,
+    output reg exception_in,
     
     // from hazard
     input stall,
@@ -37,8 +37,8 @@ module memory (
     input [31:0] mem_load_data,
     
     // to fetch
-    output branch_taken_out,
-    output branch_address,
+    output branch_taken,
+    output [31:0] branch_address,
 
     // to writeback
     output reg [31:0] pc_out,
@@ -48,8 +48,8 @@ module memory (
     output reg [31:0] csr_data_out,
     output reg [31:0] load_data_out,
     output reg [1:0] write_select_out,
-    output reg [4:0] rd_addr_out,
-    output reg [11:0] csr_addr_out,
+    output reg [4:0] rd_address_out,
+    output reg [11:0] csr_address_out,
     output reg mret_out,
     output reg wfi_out,
     // to writeback
@@ -59,26 +59,24 @@ module memory (
 );
 
 wire to_execute = !exception_in && valid_in;
-assign data_hazard = to_execute ? rd_addr_in : 5'b00000;
-assign csr_hazard = to_execute && write_csr;
 
-wire valid_branch_address = (alu_data_in[1:0] == 2'b00);
+wire valid_branch_address = (alu_data_in[1:0] == 0);
 reg valid_mem_address;
 
 always @(*) begin
     case (load_store_size)
-        2'b00: valid_mem_address = 1'b1;
-        2'b01: valid_mem_address = (alu_data_in[0] == 1'b0);
-        2'b10: valid_mem_address = (alu_data_in[1:0] == 2'b00);
-        2'b11: valid_mem_address = 1'b0;
+        2'b00: valid_mem_address = 1;
+        2'b01: valid_mem_address = (alu_data_in[0] == 0);
+        2'b10: valid_mem_address = (alu_data_in[1:0] == 0);
+        2'b11: valid_mem_address = 0;
     endcase
 end
 
 assign branch_taken_out = valid_branch_address && branch_taken_in;
 assign branch_address = alu_data_in;
 
-assign mem_load = to_execute && valid_mem_address && load;
-assign mem_store = to_execute && valid_mem_address && store;
+assign mem_load = to_execute && valid_mem_address && load_in;
+assign mem_store = to_execute && valid_mem_address && store_in;
 assign mem_addr = alu_data_in;
 assign mem_store_data = rs2_data;
 
@@ -91,23 +89,23 @@ always @(posedge clk) begin
             csr_data_out <= csr_data_in;
             load_data_out <= mem_load_data;
             write_select_out <= write_select_in;
-            rd_addr_out <= rd_addr_in;
-            csr_addr_out <= csr_addr_in;
+            rd_address_out <= rd_address_in;
+            csr_address_out <= csr_address_in;
             mret_out <= mret_in;
             wfi_out <= wfi_in;
             if (!exception_in && !valid_branch_address) begin
                 ecause_out <= 0;
-                exception_out <= 1'b1;
+                exception_out <= 1;
             end else if (!exception_in && !valid_mem_address) begin
                 ecause_out <= load ? 4 : 6;
-                exception_out <= 1'b1;
+                exception_out <= 1;
             end else begin
                 ecause_out <= ecause_in;
                 exception_out <= exception_in;
             end
-            valid_out <= valid_in;
+            valid_out <= 0;
         end else begin
-            valid_out <= 1'b1;
+            valid_out <= 1;
         end
     end
 end
