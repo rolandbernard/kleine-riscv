@@ -28,8 +28,10 @@ module memory (
     input invalidate,
 
     // to busio
-    output [31:0] mem_addr,
+    output [31:0] mem_address,
     output [31:0] mem_store_data,
+    output [1:0] mem_size,
+    output mem_signed,
     output mem_load,
     output mem_store,
     
@@ -58,13 +60,13 @@ module memory (
     output reg exception_out,
 );
 
-wire to_execute = !exception_in && valid_in;
+wire to_execute = !invalidate && !exception_in && valid_in;
 
 wire valid_branch_address = (alu_data_in[1:0] == 0);
 reg valid_mem_address;
 
 always @(*) begin
-    case (load_store_size)
+    case (load_store_size_in)
         2'b00: valid_mem_address = 1;
         2'b01: valid_mem_address = (alu_data_in[0] == 0);
         2'b10: valid_mem_address = (alu_data_in[1:0] == 0);
@@ -72,13 +74,15 @@ always @(*) begin
     endcase
 end
 
-assign branch_taken_out = valid_branch_address && branch_taken_in;
+assign branch_taken = to_execute && valid_branch_address && branch_taken_in;
 assign branch_address = alu_data_in;
 
 assign mem_load = to_execute && valid_mem_address && load_in;
 assign mem_store = to_execute && valid_mem_address && store_in;
-assign mem_addr = alu_data_in;
-assign mem_store_data = rs2_data;
+assign mem_size = load_store_size_in;
+assign mem_signed = load_signed_in;
+assign mem_address = alu_data_in;
+assign mem_store_data = rs2_data_in;
 
 always @(posedge clk) begin
     if (!stall) begin
@@ -93,11 +97,11 @@ always @(posedge clk) begin
             csr_address_out <= csr_address_in;
             mret_out <= mret_in;
             wfi_out <= wfi_in;
-            if (!exception_in && !valid_branch_address) begin
+            if (!exception_in && branch_taken_in && !valid_branch_address) begin
                 ecause_out <= 0;
                 exception_out <= 1;
-            end else if (!exception_in && !valid_mem_address) begin
-                ecause_out <= load ? 4 : 6;
+            end else if (!exception_in && (load_in || store_in) && !valid_mem_address) begin
+                ecause_out <= load_in ? 4 : 6;
                 exception_out <= 1;
             end else begin
                 ecause_out <= ecause_in;

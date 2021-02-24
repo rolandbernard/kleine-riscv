@@ -16,7 +16,7 @@ module writeback (
     input valid_in,
     input [3:0] ecause_in,
     input exception_in,
-    
+
     // from csr
     input sip,
     input tip,
@@ -26,8 +26,9 @@ module writeback (
     output [4:0] rd_address,
     output reg [31:0] rd_data,
 
-    // to fetch and csr
+    // to fetch and csr and hazard
     output traped,
+    output mret,
 
     // to csr
     output retired,
@@ -44,6 +45,8 @@ assign traped = (sip || tip || eip || exception_in);
 assign ecp = wfi_in ? next_pc_in : pc_in;
 
 assign retired = to_execute && !traped;
+
+assign mret = mret_in;
 
 always @(*) begin
     if (eip) begin
