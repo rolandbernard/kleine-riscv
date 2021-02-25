@@ -105,8 +105,8 @@ alu ex_alu (
 wire csr_exception = ((csr_read_in && !csr_readable_in) || (csr_write_in && !csr_writeable_in));
 
 always @(posedge clk) begin
-    valid_out <= 0;
     if (!stall) begin
+        valid_out <= 0;
         if (valid_in && !invalidate) begin
             pc_out <= pc_in;
             next_pc_out <= next_pc_in;

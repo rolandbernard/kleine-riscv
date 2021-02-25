@@ -87,8 +87,8 @@ assign mem_address = alu_data_in;
 assign mem_store_data = rs2_data_in;
 
 always @(posedge clk) begin
-        valid_out <= 0;
     if (!stall) begin
+        valid_out <= 0;
         if (valid_in && !invalidate) begin
             pc_out <= pc_in;
             next_pc_out <= next_pc_in;

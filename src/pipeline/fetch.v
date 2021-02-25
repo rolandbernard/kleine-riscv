@@ -45,13 +45,13 @@ always @(posedge clk) begin
     end else if (branch) begin
         pc <= branch_vector;
     end else begin
-        pc <= stall ? pc : next_pc;
+        pc <= (stall || invalidate) ? pc : next_pc;
     end
 end
 
 always @(posedge clk) begin
-    valid_out <= 0;
     if (!stall) begin
+        valid_out <= 0;
         if (!invalidate) begin
             pc_out <= pc;
             next_pc_out <= next_pc;
