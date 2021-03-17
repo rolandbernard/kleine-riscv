@@ -175,7 +175,44 @@ end
 
 always @(posedge clk) begin
     if (write_enable) begin
-        
+        casez (read_address)
+            12'h300: begin // mstatus
+                //    SD  WPRI   TSR    TW   TVM   MXR   SUM  MPRV    XS    FS   MPP  WPRI   SPP MPIE  WPRI  SPIE  UPIE MIE  WPRI   SIE   UIE
+                // {1'b0, 8'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 2'b0, 2'b0, 2'b0, 2'b0, 1'b0, pie, 1'b0, 1'b0, 1'b0, ie, 1'b0, 1'b0, 1'b0};
+            end
+            12'h344: begin // mip
+                //   WPRI  MEIP  WPRI  SEIP  UEIP  MTIP  WPRI  STIP  UTIP  MSIP  WPRI  SSIP  USIP
+                // {20'b0, meip, 1'b0, 1'b0, 1'b0, mtip, 1'b0, 1'b0, 1'b0, msip, 1'b0, 1'b0, 1'b0};
+            end
+            12'h304: begin // mie
+                //   WPRI  MEIE  WPRI  SEIE  UEIE  MTIE  WPRI  STIE  UTIE  MSIE  WPRI  SSIE  USIE
+                // {20'b0, meie, 1'b0, 1'b0, 1'b0, mtie, 1'b0, 1'b0, 1'b0, msie, 1'b0, 1'b0, 1'b0};
+            end
+            12'h305: begin // mtvec
+                // {mtvec[31:2], 2'b00};
+            end
+            12'h340: begin // mscratch
+                // mscratch;
+            end
+            12'h341: begin // mepc
+                // mecp;
+            end
+            12'h342: begin // mcause
+                // {minterupt, 27'b0, mcause};
+            end
+            12'hb00, 12'hb01: begin // mcycle, mtime
+                // cycle[31:0];
+            end
+            12'hb02: begin // minstret
+                // instret[31:0];
+            end
+            12'hb80, 12'hb81: begin // mcycleh, mtimeh
+                // cycle[63:32];
+            end
+            12'hb82: begin // minstreth
+                // instret[63:32];
+            end
+        endcase
     end
 end
 
