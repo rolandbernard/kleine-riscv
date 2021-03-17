@@ -38,9 +38,9 @@ module writeback (
 
     // to csr
     output retired,
-    output reg ecause,
-    output reg interupt,
     output [31:0] ecp,
+    output reg [3:0] ecause,
+    output reg interupt,
 );
 
 `include "../params.vh"
