@@ -175,42 +175,45 @@ end
 
 always @(posedge clk) begin
     if (write_enable) begin
-        casez (read_address)
+        casez (write_address)
             12'h300: begin // mstatus
-                //    SD  WPRI   TSR    TW   TVM   MXR   SUM  MPRV    XS    FS   MPP  WPRI   SPP MPIE  WPRI  SPIE  UPIE MIE  WPRI   SIE   UIE
-                // {1'b0, 8'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 2'b0, 2'b0, 2'b0, 2'b0, 1'b0, pie, 1'b0, 1'b0, 1'b0, ie, 1'b0, 1'b0, 1'b0};
+                ie <= write_data[3];
+                pie <= write_data[7];
             end
             12'h344: begin // mip
-                //   WPRI  MEIP  WPRI  SEIP  UEIP  MTIP  WPRI  STIP  UTIP  MSIP  WPRI  SSIP  USIP
-                // {20'b0, meip, 1'b0, 1'b0, 1'b0, mtip, 1'b0, 1'b0, 1'b0, msip, 1'b0, 1'b0, 1'b0};
+                msip <= write_data[3];
+                mtip <= write_data[7];
+                meip <= write_data[11];
             end
             12'h304: begin // mie
-                //   WPRI  MEIE  WPRI  SEIE  UEIE  MTIE  WPRI  STIE  UTIE  MSIE  WPRI  SSIE  USIE
-                // {20'b0, meie, 1'b0, 1'b0, 1'b0, mtie, 1'b0, 1'b0, 1'b0, msie, 1'b0, 1'b0, 1'b0};
+                msie <= write_data[3];
+                mtie <= write_data[7];
+                meie <= write_data[11];
             end
             12'h305: begin // mtvec
-                // {mtvec[31:2], 2'b00};
+                mtvec[31:2] <= write_data[31:2];
             end
             12'h340: begin // mscratch
-                // mscratch;
+                mscratch <= write_data;
             end
             12'h341: begin // mepc
-                // mecp;
+                mecp <= write_data;
             end
             12'h342: begin // mcause
-                // {minterupt, 27'b0, mcause};
+                minterupt <= write_data[31];
+                mcause <= write_data[3:0];
             end
             12'hb00, 12'hb01: begin // mcycle, mtime
-                // cycle[31:0];
+                cycle[31:0] <= write_data;
             end
             12'hb02: begin // minstret
-                // instret[31:0];
+                instret[31:0] <= write_data;
             end
             12'hb80, 12'hb81: begin // mcycleh, mtimeh
-                // cycle[63:32];
+                cycle[63:32] <= write_data;
             end
             12'hb82: begin // minstreth
-                // instret[63:32];
+                instret[63:32] <= write_data;
             end
         endcase
     end
