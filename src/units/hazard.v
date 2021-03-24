@@ -1,4 +1,6 @@
 module hazard (
+    input reset,
+
     // from decode
     input [4:0] rs1_address_decode,
     input [4:0] rs2_address_decode,
@@ -49,13 +51,13 @@ assign stall_fetch = !invalidate_fetch && (
 );
 assign stall_decode = !invalidate_decode && stall_execute;
 assign stall_execute = !invalidate_execute && (stall_memory || !mem_ready);
-assign stall_memory = 0; //!invalidate_memory && ;
+assign stall_memory = 0;
 
 wire branch_invalidate = branch_taken || mret_writeback || traped;
 
-assign invalidate_fetch = branch_invalidate || mret_memory || !fetch_ready;
-assign invalidate_decode = branch_invalidate || mret_memory;
-assign invalidate_execute = branch_invalidate || mret_memory;
-assign invalidate_memory = branch_invalidate || !mem_ready;
+assign invalidate_fetch = reset || branch_invalidate || mret_memory || !fetch_ready;
+assign invalidate_decode = reset || branch_invalidate || mret_memory;
+assign invalidate_execute = reset || branch_invalidate || mret_memory;
+assign invalidate_memory = reset || branch_invalidate || !mem_ready;
 
 endmodule
