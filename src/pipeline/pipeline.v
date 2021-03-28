@@ -136,20 +136,25 @@ fetch pipeline_fetch (
     .fetch_data(fetch_data),
 
     // to decode
-    pc_out,
-    next_pc_out,
-    instruction_out,
-    valid_out,
+    .pc_out(fetch_to_decode_pc),
+    .next_pc_out(fetch_to_decode_next_pc),
+    .instruction_out(fetch_to_decode_instruction),
+    .valid_out(fetch_to_decode_valid),
 );
+
+wire [31:0] fetch_to_decode_pc;
+wire [31:0] fetch_to_decode_next_pc;
+wire [31:0] fetch_to_decode_instruction;
+wire fetch_to_decode_valid;
 
 decode pipeline_decode (
     .clk(clk),
 
     // from fetch
-    pc_in,
-    next_pc_in,
-    instruction_in,
-    valid_in,
+    .pc_in(fetch_to_decode_pc),
+    .next_pc_in(fetch_to_decode_next_pc),
+    .instruction_in(fetch_to_decode_instruction),
+    .valid_in(fetch_to_decode_valid),
 
     // from hazard
     stall,
@@ -170,78 +175,108 @@ decode pipeline_decode (
     csr_writeable,
 
     // to execute
-    pc_out,
-    next_pc_out,
+    .pc_out(decode_to_execute_pc),
+    .next_pc_out(decode_to_execute_next_pc),
     // to execute (control EX)
-    rs1_data_out,
-    rs2_data_out,
-    csr_data_out,
-    imm_data_out,
-    alu_function_out,
-    alu_function_modifier_out,
-    alu_select_a_out,
-    alu_select_b_out,
-    cmp_function_out,
-    jump_out,
-    branch_out,
-    csr_read_out,
-    csr_write_out,
-    csr_readable_out,
-    csr_writeable_out,
+    .rs1_data_out(decode_to_execute_rs1_data),
+    .rs2_data_out(decode_to_execute_rs2_data),
+    .csr_data_out(decode_to_execute_csr_data),
+    .imm_data_out(decode_to_execute_imm_data),
+    .alu_function_out(decode_to_execute_alu_function),
+    .alu_function_modifier_out(decode_to_execute_alu_function_modifier),
+    .alu_select_a_out(decode_to_execute_alu_select_a),
+    .alu_select_b_out(decode_to_execute_alu_select_b),
+    .cmp_function_out(decode_to_execute_cmp_function),
+    .jump_out(decode_to_execute_jump),
+    .branch_out(decode_to_execute_branch),
+    .csr_read_out(decode_to_execute_csr_read),
+    .csr_write_out(decode_to_execute_csr_write),
+    .csr_readable_out(decode_to_execute_csr_readable),
+    .csr_writeable_out(decode_to_execute_csr_writeable),
     // to execute (control MEM)
-    load_out,
-    store_out,
-    load_store_size_out,
-    load_signed_out,
+    .load_out(decode_to_execute_load),
+    .store_out(decode_to_execute_store),
+    .load_store_size_out(decode_to_execute_load_store_size),
+    .load_signed_out(decode_to_execute_load_signed),
     // to execute (control WB)
-    write_select_out,
-    rd_address_out,
-    csr_address_out,
-    mret_out,
-    wfi_out,
+    .write_select_out(decode_to_execute_write_select),
+    .rd_address_out(decode_to_execute_rd_address),
+    .csr_address_out(decode_to_execute_csr_address),
+    .mret_out(decode_to_execute_mret),
+    .wfi_out(decode_to_execute_wfi),
     // to execute
-    valid_out,
-    ecause_out,
-    exception_out,
+    .valid_out(decode_to_execute_valid),
+    .ecause_out(decode_to_execute_ecause),
+    .exception_out(decode_to_execute_exception),
 );
+
+wire [31:0] decode_to_execute_pc;
+wire [31:0] decode_to_execute_next_pc;
+wire [31:0] decode_to_execute_rs1_data;
+wire [31:0] decode_to_execute_rs2_data;
+wire [31:0] decode_to_execute_csr_data;
+wire [31:0] decode_to_execute_imm_data;
+wire [2:0] decode_to_execute_alu_function;
+wire decode_to_execute_alu_function_modifier;
+wire [1:0] decode_to_execute_alu_select_a;
+wire [1:0] decode_to_execute_alu_select_b;
+wire [2:0] decode_to_execute_cmp_function;
+wire decode_to_execute_jump;
+wire decode_to_execute_branch;
+wire decode_to_execute_csr_read;
+wire decode_to_execute_csr_write;
+wire decode_to_execute_csr_readable;
+wire decode_to_execute_csr_writeable;
+wire decode_to_execute_load;
+wire decode_to_execute_store;
+wire [1:0] decode_to_execute_load_store_size;
+wire decode_to_execute_load_signed;
+wire [1:0] decode_to_execute_write_select;
+wire [4:0] decode_to_execute_rd_address;
+wire [11:0] decode_to_execute_csr_address;
+wire decode_to_execute_mret;
+wire decode_to_execute_wfi;
+wire decode_to_execute_valid;
+wire [3:0] decode_to_execute_ecause;
+wire decode_to_execute_exception;
 
 execute pipeline_execute (
     .clk(clk),
 
     // from decode
-    pc_in,
-    next_pc_in,
+    .pc_in(decode_to_execute_pc),
+    .next_pc_in(decode_to_execute_next_pc),
     // from decode (control EX)
-    rs1_data_in,
-    rs2_data_in,
-    csr_data_in,
-    imm_data_in,
-    alu_function_in,
-    alu_function_modifier_in,
-    alu_select_a_in,
-    alu_select_b_in,
-    cmp_function_in,
-    jump_in,
-    branch_in,
-    csr_read_in,
-    csr_write_in,
-    csr_readable_in,
-    csr_writeable_in,
+    .rs1_data_in(decode_to_execute_rs1_data),
+    .rs2_data_in(decode_to_execute_rs2_data),
+    .csr_data_in(decode_to_execute_csr_data),
+    .imm_data_in(decode_to_execute_imm_data),
+    .alu_function_in(decode_to_execute_alu_function),
+    .alu_function_modifier_in(decode_to_execute_alu_function_modifier),
+    .alu_select_a_in(decode_to_execute_alu_select_a),
+    .alu_select_b_in(decode_to_execute_alu_select_b),
+    .cmp_function_in(decode_to_execute_cmp_function),
+    .jump_in(decode_to_execute_jump),
+    .branch_in(decode_to_execute_branch),
+    .csr_read_in(decode_to_execute_csr_read),
+    .csr_write_in(decode_to_execute_csr_write),
+    .csr_readable_in(decode_to_execute_csr_readable),
+    .csr_writeable_in(decode_to_execute_csr_writeable),
     // from decode (control MEM)
-    load_in,
-    store_in,
-    load_store_size_in,
-    load_signed_in,
+    .load_in(decode_to_execute_load),
+    .store_in(decode_to_execute_store),
+    .load_store_size_in(decode_to_execute_load_store_size),
+    .load_signed_in(decode_to_execute_load_signed),
     // from decode (control WB)
-    write_select_in,
-    rd_address_in,
-    csr_address_in,
-    mret_in,
-    wfi_in,
+    .write_select_in(decode_to_execute_write_select),
+    .rd_address_in(decode_to_execute_rd_address),
+    .csr_address_in(decode_to_execute_csr_address),
+    .mret_in(decode_to_execute_mret),
+    .wfi_in(decode_to_execute_wfi),
     // from decode
-    valid_in,
-    ecause_in,
-    exception_in,
+    .valid_in(decode_to_execute_valid),
+    .ecause_in(decode_to_execute_ecause),
+    .exception_in(decode_to_execute_exception),
     
     // from hazard
     stall,
