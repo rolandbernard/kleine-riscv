@@ -283,55 +283,75 @@ execute pipeline_execute (
     invalidate,
 
     // to memory
-    pc_out,
-    next_pc_out,
+    .pc_out(execute_to_memory_pc),
+    .next_pc_out(execute_to_memory_next_pc),
     // to memory (control MEM)
-    alu_data_out,
-    rs2_data_out,
-    csr_data_out,
-    branch_taken_out,
-    load_out,
-    store_out,
-    load_store_size_out,
-    load_signed_out,
+    .alu_data_out(execute_to_memory_alu_data),
+    .rs2_data_out(execute_to_memory_rs2_data),
+    .csr_data_out(execute_to_memory_csr_data),
+    .branch_taken_out(execute_to_memory_branch_taken),
+    .load_out(execute_to_memory_load),
+    .store_out(execute_to_memory_store),
+    .load_store_size_out(execute_to_memory_load_store_size),
+    .load_signed_out(execute_to_memory_load_signed),
     // to memory (control WB)
-    write_select_out,
-    rd_address_out,
-    csr_address_out,
-    csr_write_out,
-    mret_out,
-    wfi_out,
+    .write_select_out(execute_to_memory_write_select),
+    .rd_address_out(execute_to_memory_rd_address),
+    .csr_address_out(execute_to_memory_csr_address),
+    .csr_write_out(execute_to_memory_csr_write),
+    .mret_out(execute_to_memory_mret),
+    .wfi_out(execute_to_memory_wfi),
     // to memory
-    valid_out,
-    ecause_out,
-    exception_out,
+    .valid_out(execute_to_memory_valid),
+    .ecause_out(execute_to_memory_ecause),
+    .exception_out(execute_to_memory_exception),
 );
+
+wire [31:0] execute_to_memory_pc;
+wire [31:0] execute_to_memory_next_pc;
+wire [31:0] execute_to_memory_alu_data;
+wire [31:0] execute_to_memory_rs2_data;
+wire [31:0] execute_to_memory_csr_data;
+wire execute_to_memory_branch_taken;
+wire execute_to_memory_load;
+wire execute_to_memory_store;
+wire [1:0] execute_to_memory_load_store_size;
+wire execute_to_memory_load_signed;
+wire [1:0] execute_to_memory_write_select;
+wire [4:0] execute_to_memory_rd_address;
+wire [11:0] execute_to_memory_csr_address;
+wire execute_to_memory_csr_write;
+wire execute_to_memory_mret;
+wire execute_to_memory_wfi;
+wire execute_to_memory_valid;
+wire [3:0] execute_to_memory_ecause;
+wire execute_to_memory_exception;
 
 memory pipeline_memory (
     .clk(clk),
     // from execute
-    pc_in,
-    next_pc_in,
+    .pc_in(execute_to_memory_pc),
+    .next_pc_in(execute_to_memory_next_pc),
     // from execute (control MEM)
-    alu_data_in,
-    rs2_data_in,
-    csr_data_in,
-    branch_taken_in,
-    load_in,
-    store_in,
-    load_store_size_in,
-    load_signed_in,
+    .alu_data_in(execute_to_memory_alu_data),
+    .rs2_data_in(execute_to_memory_rs2_data),
+    .csr_data_in(execute_to_memory_csr_data),
+    .branch_taken_in(execute_to_memory_branch_taken),
+    .load_in(execute_to_memory_load),
+    .store_in(execute_to_memory_store),
+    .load_store_size_in(execute_to_memory_load_store_size),
+    .load_signed_in(execute_to_memory_load_signed),
     // from execute (control WB)
-    write_select_in,
-    rd_address_in,
-    csr_address_in,
-    csr_write_in,
-    mret_in,
-    wfi_in,
+    .write_select_in(execute_to_memory_write_select),
+    .rd_address_in(execute_to_memory_rd_address),
+    .csr_address_in(execute_to_memory_csr_address),
+    .csr_write_in(execute_to_memory_csr_write),
+    .mret_in(execute_to_memory_mret),
+    .wfi_in(execute_to_memory_wfi),
     // from execute
-    valid_in,
-    ecause_in,
-    exception_in,
+    .valid_in(execute_to_memory_valid),
+    .ecause_in(execute_to_memory_ecause),
+    .exception_in(execute_to_memory_exception),
     
     // from hazard
     stall,
@@ -353,44 +373,59 @@ memory pipeline_memory (
     branch_address,
 
     // to writeback
-    pc_out,
-    next_pc_out,
+    .pc_out(memory_to_writeback_pc),
+    .next_pc_out(memory_to_writeback_next_pc),
     // to writeback (control WB)
-    alu_data_out,
-    csr_data_out,
-    load_data_out,
-    write_select_out,
-    rd_address_out,
-    csr_address_out,
-    csr_write_out,
-    mret_out,
-    wfi_out,
+    .alu_data_out(memory_to_writeback_alu_data),
+    .csr_data_out(memory_to_writeback_csr_data),
+    .load_data_out(memory_to_writeback_load_data),
+    .write_select_out(memory_to_writeback_write_select),
+    .rd_address_out(memory_to_writeback_rd_address),
+    .csr_address_out(memory_to_writeback_csr_address),
+    .csr_write_out(memory_to_writeback_csr_write),
+    .mret_out(memory_to_writeback_mret),
+    .wfi_out(memory_to_writeback_wfi),
     // to writeback
-    valid_out,
-    ecause_out,
-    exception_out,
+    .valid_out(memory_to_writeback_valid),
+    .ecause_out(memory_to_writeback_ecause),
+    .exception_out(memory_to_writeback_exception),
 );
+
+wire [31:0] memory_to_writeback_pc;
+wire [31:0] memory_to_writeback_next_pc;
+wire [31:0] memory_to_writeback_alu_data;
+wire [31:0] memory_to_writeback_csr_data;
+wire [31:0] memory_to_writeback_load_data;
+wire [1:0] memory_to_writeback_write_select;
+wire [4:0] memory_to_writeback_rd_address;
+wire [11:0] memory_to_writeback_csr_address;
+wire memory_to_writeback_csr_write;
+wire memory_to_writeback_mret;
+wire memory_to_writeback_wfi;
+wire memory_to_writeback_valid;
+wire [3:0] memory_to_writeback_ecause;
+wire memory_to_writeback_exception;
 
 writeback pipeline_writeback (
     .clk(clk),
 
     // from memory
-    pc_in,
-    next_pc_in,
+    .pc_in(memory_to_writeback_pc),
+    .next_pc_in(memory_to_writeback_next_pc),
     // from memory (control WB)
-    alu_data_in,
-    csr_data_in,
-    load_data_in,
-    write_select_in,
-    rd_address_in,
-    csr_address_in,
-    csr_write_in,
-    mret_in,
-    wfi_in,
+    .alu_data_in(memory_to_writeback_alu_data),
+    .csr_data_in(memory_to_writeback_csr_data),
+    .load_data_in(memory_to_writeback_load_data),
+    .write_select_in(memory_to_writeback_write_select),
+    .rd_address_in(memory_to_writeback_rd_address),
+    .csr_address_in(memory_to_writeback_csr_address),
+    .csr_write_in(memory_to_writeback_csr_write),
+    .mret_in(memory_to_writeback_mret),
+    .wfi_in(memory_to_writeback_wfi),
     // from memory
-    valid_in,
-    ecause_in,
-    exception_in,
+    .valid_in(memory_to_writeback_valid),
+    .ecause_in(memory_to_writeback_ecause),
+    .exception_in(memory_to_writeback_exception),
 
     // from csr
     sip,
