@@ -50,14 +50,15 @@ assign stall_fetch = !invalidate_fetch && (
     || csr_write_execute || csr_write_memory || csr_write_writeback
 );
 assign stall_decode = !invalidate_decode && stall_execute;
-assign stall_execute = !invalidate_execute && (stall_memory || !mem_ready);
+assign stall_execute = !invalidate_execute && (stall_memory || !mem_ready || mret_memory);
 assign stall_memory = 0;
 
-wire branch_invalidate = branch_taken || mret_writeback || traped;
+wire trap_invalidate = mret_writeback || traped;
+wire branch_invalidate = branch_taken || trap_invalidate;
 
-assign invalidate_fetch = reset || branch_invalidate || mret_memory || !fetch_ready;
-assign invalidate_decode = reset || branch_invalidate || mret_memory;
-assign invalidate_execute = reset || branch_invalidate || mret_memory;
-assign invalidate_memory = reset || branch_invalidate || !mem_ready;
+assign invalidate_fetch = reset || branch_invalidate || !fetch_ready;
+assign invalidate_decode = reset || branch_invalidate;
+assign invalidate_execute = reset || branch_invalidate;
+assign invalidate_memory = reset || trap_invalidate || !mem_ready;
 
 endmodule

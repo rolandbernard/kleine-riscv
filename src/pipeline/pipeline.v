@@ -25,90 +25,134 @@ csr control_registers (
     .clk(clk),
 
     // from decode (read port)
-    read_address,
+    .read_address(decode_to_csr_read_address),
     // to decode (read port)
-    read_data,
-    readable,
-    writeable,
+    .read_data(csr_to_decode_read_data),
+    .readable(csr_to_decode_readable),
+    .writeable(csr_to_decode_writable),
 
     // from writeback (write port)
-    write_enable,
-    write_address,
-    write_data,
+    .write_enable(writeback_to_csr_write_enable),
+    .write_address(writeback_to_csr_write_address),
+    .write_data(writeback_to_csr_write_data),
     // from writeback
-    retired,
-    traped,
-    mret,
-    ecp,
-    trap_cause,
-    interupt,
+    .retired(writeback_to_csr_retired),
+    .traped(global_traped),
+    .mret(global_mret),
+    .ecp(writeback_to_csr_ecp),
+    .trap_cause(writeback_to_csr_trap_cause),
+    .interupt(writeback_to_csr_interupt),
     // to writeback
-    eip,
-    tip,
-    sip,
+    .eip(csr_to_writeback_eip),
+    .tip(csr_to_writeback_tip),
+    .sip(csr_to_writeback_sip),
 
     // to fetch
-    trap_vector,
-    mret_vector,
+    .trap_vector(csr_to_fetch_trap_vector),
+    .mret_vector(csr_to_fetch_mret_vector),
 );
+
+wire [11:0] decode_to_csr_read_address;
+wire [31:0] csr_to_decode_read_data;
+wire csr_to_decode_readable;
+wire csr_to_decode_writable;
+
+wire writeback_to_csr_write_enable;
+wire [11:0] writeback_to_csr_write_address;
+wire [31:0] writeback_to_csr_write_data;
+wire writeback_to_csr_retired;
+wire [31:0] writeback_to_csr_ecp;
+wire [4:0] writeback_to_csr_trap_cause;
+wire writeback_to_csr_interupt;
+wire csr_to_writeback_eip;
+wire csr_to_writeback_tip;
+wire csr_to_writeback_sip;
+
+wire [31:0] csr_to_fetch_trap_vector;
+wire [31:0] csr_to_fetch_mret_vector;
+
+wire global_traped;
+wire global_mret;
 
 regfile registers (
     .clk(clk),
 
     // from decode (read ports)
-    rs1_address,
-    rs2_address,
+    .rs1_address(decode_to_regfile_rs1_address),
+    .rs2_address(decode_to_regfile_rs2_address),
     // to decode (read ports)
-    rs1_data,
-    rs2_data,
+    .rs1_data(regfile_to_decode_rs1_data),
+    .rs2_data(regfile_to_decode_rs2_data),
 
     // from writeback (write port)
-    rd_address,
-    rd_data,
+    .rd_address(writeback_to_regfile_rd_address),
+    .rd_data(writeback_to_regfile_rd_data),
 );
+
+wire [4:0] decode_to_regfile_rs1_address;
+wire [4:0] decode_to_regfile_rs2_address;
+wire [31:0] regfile_to_decode_rs1_data;
+wire [31:0] regfile_to_decode_rs2_data;
+
+wire [4:0] writeback_to_regfile_rd_address;
+wire [31:0] writeback_to_regfile_rd_data;
 
 hazard hazard_control (
     .reset(reset),
 
     // from decode
-    rs1_address_decode,
-    rs2_address_decode,
+    .rs1_address_decode(decode_to_regfile_rs2_address),
+    .rs2_address_decode(decode_to_regfile_rs2_address),
 
     // from execute
-    rd_address_execute,
-    csr_write_execute,
+    .rd_address_execute(decode_to_execute_rd_address),
+    .csr_write_execute(decode_to_execute_csr_write),
         
     // from memory
-    rd_address_memory,
-    csr_write_memory,
-    branch_taken,
-    mret_memory,
+    .rd_address_memory(execute_to_memory_rd_address),
+    .csr_write_memory(execute_to_memory_csr_write),
+    .branch_taken(global_branch_taken),
+    .mret_memory(execute_to_memory_mret),
 
     // from writeback
-    csr_write_writeback,
-    mret_writeback,
-    traped,
+    .csr_write_writeback(writeback_to_csr_write_enable),
+    .mret_writeback(global_mret),
+    .traped(global_traped),
 
     // from busio
     .fetch_ready(fetch_ready),
     .mem_ready(mem_ready),
 
     // to fetch
-    stall_fetch,
-    invalidate_fetch,
+    .stall_fetch,
+    .invalidate_fetch,
 
     // to decode
-    stall_decode,
-    invalidate_decode,
+    .stall_decode,
+    .invalidate_decode,
 
     // to execute
-    stall_execute,
-    invalidate_execute,
+    .stall_execute,
+    .invalidate_execute,
 
     // to memory
-    stall_memory,
-    invalidate_memory,
+    .stall_memory,
+    .invalidate_memory,
 );
+
+wire hazard_to_fetch_stall;
+wire hazard_to_fetch_invalidate;
+
+wire hazard_to_decode_stall;
+wire hazard_to_decode_invalidate;
+
+wire hazard_to_execute_stall;
+wire hazard_to_execute_invalidate;
+
+wire hazard_to_memory_stall;
+wire hazard_to_memory_invalidate;
+
+wire global_branch_taken;
 
 fetch pipeline_fetch (
     .clk(clk),
@@ -119,16 +163,16 @@ fetch pipeline_fetch (
     branch_vector,
     
     // from writeback
-    trap,
-    mret,
+    .trap(global_traped),
+    .mret(global_mret),
 
     // from csr
-    trap_vector,
-    mret_vector,
+    .trap_vector(csr_to_fetch_trap_vector),
+    .mret_vector(csr_to_fetch_mret_vector),
 
     // from hazard
-    stall,
-    invalidate,
+    .stall(hazard_to_fetch_stall),
+    .invalidate(hazard_to_fetch_invalidate),
     
     // to busio
     .fetch_address(fetch_address),
@@ -157,22 +201,22 @@ decode pipeline_decode (
     .valid_in(fetch_to_decode_valid),
 
     // from hazard
-    stall,
-    invalidate,
+    .stall(hazard_to_decode_stall),
+    .invalidate(hazard_to_decode_invalidate),
 
     // to regfile
-    rs1_address,
-    rs2_address,
+    .rs1_address(decode_to_regfile_rs1_address),
+    .rs2_address(decode_to_regfile_rs2_address),
     // from regfile
-    rs1_data,
-    rs2_data,
+    .rs1_data(regfile_to_decode_rs1_data),
+    .rs2_data(regfile_to_decode_rs2_data),
     
     // to csr
-    csr_address,
-    csr_data,
+    .csr_address(decode_to_csr_read_address),
     // from csr
-    csr_readable,
-    csr_writeable,
+    .csr_data(csr_to_decode_read_data),
+    .csr_readable(csr_to_decode_readable),
+    .csr_writeable(csr_to_decode_writable),
 
     // to execute
     .pc_out(decode_to_execute_pc),
@@ -279,8 +323,8 @@ execute pipeline_execute (
     .exception_in(decode_to_execute_exception),
     
     // from hazard
-    stall,
-    invalidate,
+    .stall(hazard_to_execute_stall),
+    .invalidate(hazard_to_execute_invalidate),
 
     // to memory
     .pc_out(execute_to_memory_pc),
@@ -354,8 +398,8 @@ memory pipeline_memory (
     .exception_in(execute_to_memory_exception),
     
     // from hazard
-    stall,
-    invalidate,
+    .stall(hazard_to_memory_stall),
+    .invalidate(hazard_to_memory_invalidate),
 
     // to busio
     .mem_address(mem_address),
@@ -428,28 +472,28 @@ writeback pipeline_writeback (
     .exception_in(memory_to_writeback_exception),
 
     // from csr
-    sip,
-    tip,
-    eip,
+    .sip(csr_to_writeback_sip),
+    .tip(csr_to_writeback_tip),
+    .eip(csr_to_writeback_eip),
 
     // to regfile
-    rd_address,
-    rd_data,
+    .rd_address(writeback_to_regfile_rd_address),
+    .rd_data(writeback_to_regfile_rd_data),
 
     // to csr
-    csr_write,
-    csr_address,
-    csr_data,
+    .csr_write(writeback_to_csr_write_enable),
+    .csr_address(writeback_to_csr_write_address),
+    .csr_data(writeback_to_csr_write_data),
 
     // to fetch and csr and hazard
-    traped,
-    mret,
+    .traped(global_traped),
+    .mret(global_mret),
 
     // to csr
-    retired,
-    ecp,
-    ecause,
-    interupt,
+    .retired(writeback_to_csr_retired),
+    .ecp(writeback_to_csr_ecp),
+    .ecause(writeback_to_csr_trap_cause),
+    .interupt(writeback_to_csr_interupt),
 );
 
 endmodule
