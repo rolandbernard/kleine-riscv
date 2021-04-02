@@ -62,7 +62,7 @@ wire [11:0] writeback_to_csr_write_address;
 wire [31:0] writeback_to_csr_write_data;
 wire writeback_to_csr_retired;
 wire [31:0] writeback_to_csr_ecp;
-wire [4:0] writeback_to_csr_trap_cause;
+wire [3:0] writeback_to_csr_trap_cause;
 wire writeback_to_csr_interupt;
 wire csr_to_writeback_eip;
 wire csr_to_writeback_tip;
@@ -124,20 +124,20 @@ hazard hazard_control (
     .mem_ready(mem_ready),
 
     // to fetch
-    .stall_fetch,
-    .invalidate_fetch,
+    .stall_fetch(hazard_to_fetch_stall),
+    .invalidate_fetch(hazard_to_fetch_invalidate),
 
     // to decode
-    .stall_decode,
-    .invalidate_decode,
+    .stall_decode(hazard_to_decode_stall),
+    .invalidate_decode(hazard_to_decode_invalidate),
 
     // to execute
-    .stall_execute,
-    .invalidate_execute,
+    .stall_execute(hazard_to_execute_stall),
+    .invalidate_execute(hazard_to_execute_invalidate),
 
     // to memory
-    .stall_memory,
-    .invalidate_memory,
+    .stall_memory(hazard_to_memory_stall),
+    .invalidate_memory(hazard_to_memory_invalidate),
 );
 
 wire hazard_to_fetch_stall;
@@ -159,8 +159,8 @@ fetch pipeline_fetch (
     .reset(reset),
 
     // from memory
-    branch,
-    branch_vector,
+    .branch(global_branch_taken),
+    .branch_vector(memory_to_fetch_branch_address),
     
     // from writeback
     .trap(global_traped),
@@ -185,6 +185,8 @@ fetch pipeline_fetch (
     .instruction_out(fetch_to_decode_instruction),
     .valid_out(fetch_to_decode_valid),
 );
+
+wire [31:0] memory_to_fetch_branch_address;
 
 wire [31:0] fetch_to_decode_pc;
 wire [31:0] fetch_to_decode_next_pc;
@@ -413,8 +415,8 @@ memory pipeline_memory (
     .mem_load_data(mem_load_data),
     
     // to fetch
-    branch_taken,
-    branch_address,
+    .branch_taken(global_branch_taken),
+    .branch_address(memory_to_fetch_branch_address),
 
     // to writeback
     .pc_out(memory_to_writeback_pc),
