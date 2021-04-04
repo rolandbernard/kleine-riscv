@@ -32,15 +32,15 @@ int main() {
         uint32_t rd = rand() % 32;
         uint32_t rd_value = rand();
 
-        top.p_rs1__sel.set<uint32_t>(rs1);
-        top.p_rs2__sel.set<uint32_t>(rs2);
-        top.p_rd__sel.set<uint32_t>(rd);
+        top.p_rs1__address.set<uint32_t>(rs1);
+        top.p_rs2__address.set<uint32_t>(rs2);
+        top.p_rd__address.set<uint32_t>(rd);
         top.p_rd__data.set<uint32_t>(rd_value);
         
         top.step();
         
-        uint32_t rs1_out = top.p_rs1__out.get<uint32_t>();
-        uint32_t rs2_out = top.p_rs2__out.get<uint32_t>();
+        uint32_t rs1_out = top.p_rs1__data.get<uint32_t>();
+        uint32_t rs2_out = top.p_rs2__data.get<uint32_t>();
 
         // The read should "happen" before the reads
         if (rd != 0) {
