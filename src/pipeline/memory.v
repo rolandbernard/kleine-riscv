@@ -62,7 +62,7 @@ module memory (
     output reg exception_out,
 );
 
-wire to_execute = !invalidate && !exception_in && valid_in;
+wire to_execute = !exception_in && valid_in;
 
 wire valid_branch_address = (alu_data_in[1:0] == 0);
 reg valid_mem_address;
