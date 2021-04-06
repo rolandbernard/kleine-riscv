@@ -6,3 +6,5 @@ callgrind.*
 perf.*
 gmon.*
 test.*
+compile_flags.txt
+
