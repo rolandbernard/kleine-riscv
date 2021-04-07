@@ -5,10 +5,12 @@ module alu (
     input [2:0] function_select,
     input function_modifier,
 
-    output reg [31:0] result,
+    output reg [31:0] result
 );
 
 `include "../params.vh"
+
+wire [32:0] tmp_shifted = $signed({function_modifier ? input_a[31] : 1'b0, input_a}) >>> input_b[4:0];
 
 always @(*) begin
     case (function_select)
@@ -23,7 +25,7 @@ always @(*) begin
             )
         }; 
         ALU_XOR:     result = input_a ^ input_b;
-        ALU_SRL_SRA: result = $signed({function_modifier ? input_a[31] : 1'b0, input_a}) >>> input_b[4:0];
+        ALU_SRL_SRA: result = tmp_shifted[31:0];
         ALU_OR:      result = input_a | input_b;
         ALU_AND_CLR: result = (function_modifier ? ~input_a : input_a) & input_b;
     endcase

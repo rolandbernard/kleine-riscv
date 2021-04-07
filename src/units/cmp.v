@@ -4,7 +4,7 @@ module cmp (
 
     input [2:0] function_select,
 
-    output result,
+    output result
 );
 
 wire less = function_select[2];

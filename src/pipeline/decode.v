@@ -58,7 +58,7 @@ module decode (
     // to execute
     output reg valid_out,
     output reg [3:0] ecause_out,
-    output reg exception_out,
+    output reg exception_out
 );
 
 `include "../params.vh"
@@ -76,7 +76,7 @@ wire [31:0] u_type_imm_data = {instr[31:12], 12'b0};
 wire [31:0] j_type_imm_data = {{12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
 wire [31:0] i_type_imm_data = {{20{instr[31]}}, instr[31:20]};
 wire [31:0] s_type_imm_data = {{20{instr[31]}}, instr[31:25], instr[11:7]};
-wire [31:0] b_type_imm_data = {{19{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0};
+wire [31:0] b_type_imm_data = {{20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0};
 wire [31:0] csr_type_imm_data = {27'b0, rs1_address};
 
 always @(posedge clk) begin
@@ -113,13 +113,13 @@ always @(posedge clk) begin
                     imm_data_out <= u_type_imm_data;
                     rd_address_out <= rd_address;
                 end
-                7'b0110111 : begin // AUIPC
+                7'b0010111 : begin // AUIPC
                     alu_function_out <= ALU_ADD_SUB;
                     alu_select_a_out <= ALU_SEL_PC;
                     imm_data_out <= u_type_imm_data;
                     rd_address_out <= rd_address;
                 end
-                7'b0110111 : begin // JAL
+                7'b1101111 : begin // JAL
                     alu_function_out <= ALU_ADD_SUB;
                     alu_select_a_out <= ALU_SEL_PC;
                     imm_data_out <= j_type_imm_data;
@@ -247,14 +247,14 @@ always @(posedge clk) begin
                             csr_read_out <= (rd_address != 0);
                             csr_write_out <= 1;
                         end
-                        3'b001: begin // CSRRS
+                        3'b010: begin // CSRRS
                             rd_address_out <= rd_address;
                             alu_select_a_out <= ALU_SEL_REG;
                             alu_select_b_out <= ALU_SEL_CSR;
                             csr_read_out <= 1;
                             csr_write_out <= (rs1_address != 0);
                         end
-                        3'b001: begin // CSRRC
+                        3'b011: begin // CSRRC
                             rd_address_out <= rd_address;
                             alu_function_out <= ALU_AND_CLR;
                             alu_function_modifier_out <= 1;
@@ -263,20 +263,20 @@ always @(posedge clk) begin
                             csr_read_out <= 1;
                             csr_write_out <= (rs1_address != 0);
                         end
-                        3'b001: begin // CSRRWI
+                        3'b101: begin // CSRRWI
                             rd_address_out <= rd_address;
                             imm_data_out <= csr_type_imm_data;
                             csr_read_out <= (rd_address != 0);
                             csr_write_out <= 1;
                         end
-                        3'b001: begin // CSRRSI
+                        3'b110: begin // CSRRSI
                             rd_address_out <= rd_address;
                             alu_select_b_out <= ALU_SEL_CSR;
                             imm_data_out <= csr_type_imm_data;
                             csr_read_out <= 1;
                             csr_write_out <= (rs1_address != 0);
                         end
-                        3'b001: begin // CSRRCI
+                        3'b111: begin // CSRRCI
                             rd_address_out <= rd_address;
                             alu_function_out <= ALU_AND_CLR;
                             alu_function_modifier_out <= 1;

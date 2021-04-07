@@ -38,7 +38,7 @@ module hazard (
 
     // to memory
     output stall_memory,
-    output invalidate_memory,
+    output invalidate_memory
 );
 
 assign stall_fetch = !invalidate_fetch && (

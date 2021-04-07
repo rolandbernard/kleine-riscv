@@ -27,7 +27,7 @@ module fetch (
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
     output reg [31:0] instruction_out,
-    output reg valid_out,
+    output reg valid_out
 );
 
 reg [31:0] pc;

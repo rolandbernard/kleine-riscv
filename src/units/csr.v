@@ -27,7 +27,7 @@ module csr (
 
     // to fetch
     output [31:0] trap_vector,
-    output [31:0] mret_vector,
+    output [31:0] mret_vector
 );
 
 reg [63:0] cycle;
@@ -41,7 +41,7 @@ reg msie;
 reg msip;
 reg mtie;
 reg mtip;
-reg [31:2] mtvec;
+reg [31:0] mtvec;
 reg [31:0] mscratch;
 reg [31:0] mecp;
 reg [3:0] mcause;
@@ -175,18 +175,18 @@ end
 
 always @(posedge clk) begin
     if (traped) begin
-        pie = ie;
-        ie = 0;
-        mecp = ecp;
-        minterupt = interupt;
-        mcause = trap_cause;
+        pie <= ie;
+        ie <= 0;
+        mecp <= ecp;
+        minterupt <= interupt;
+        mcause <= trap_cause;
     end else if (mret) begin
-        ie = pie;
-        pie = 1;
+        ie <= pie;
+        pie <= 1;
     end
-    cycle = cycle + 1;
+    cycle <= cycle + 1;
     if (retired) begin
-        instret = instret + 1;
+        instret <= instret + 1;
     end
     if (write_enable) begin
         casez (write_address)
@@ -205,7 +205,7 @@ always @(posedge clk) begin
                 meie <= write_data[11];
             end
             12'h305: begin // mtvec
-                mtvec[31:2] <= write_data[31:2];
+                mtvec <= {write_data[31:2], 2'b00};
             end
             12'h340: begin // mscratch
                 mscratch <= write_data;
@@ -228,6 +228,8 @@ always @(posedge clk) begin
             end
             12'hb82: begin // minstreth
                 instret[63:32] <= write_data;
+            end
+            default: begin
             end
         endcase
     end

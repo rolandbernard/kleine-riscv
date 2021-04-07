@@ -18,7 +18,7 @@ module pipeline (
     output [1:0] mem_size,
     output mem_signed,
     output mem_load,
-    output mem_store,
+    output mem_store
 );
 
 csr control_registers (
@@ -49,7 +49,7 @@ csr control_registers (
 
     // to fetch
     .trap_vector(csr_to_fetch_trap_vector),
-    .mret_vector(csr_to_fetch_mret_vector),
+    .mret_vector(csr_to_fetch_mret_vector)
 );
 
 wire [11:0] decode_to_csr_read_address;
@@ -86,7 +86,7 @@ regfile registers (
 
     // from writeback (write port)
     .rd_address(writeback_to_regfile_rd_address),
-    .rd_data(writeback_to_regfile_rd_data),
+    .rd_data(writeback_to_regfile_rd_data)
 );
 
 wire [4:0] decode_to_regfile_rs1_address;
@@ -137,7 +137,7 @@ hazard hazard_control (
 
     // to memory
     .stall_memory(hazard_to_memory_stall),
-    .invalidate_memory(hazard_to_memory_invalidate),
+    .invalidate_memory(hazard_to_memory_invalidate)
 );
 
 wire hazard_to_fetch_stall;
@@ -183,7 +183,7 @@ fetch pipeline_fetch (
     .pc_out(fetch_to_decode_pc),
     .next_pc_out(fetch_to_decode_next_pc),
     .instruction_out(fetch_to_decode_instruction),
-    .valid_out(fetch_to_decode_valid),
+    .valid_out(fetch_to_decode_valid)
 );
 
 wire [31:0] memory_to_fetch_branch_address;
@@ -253,7 +253,7 @@ decode pipeline_decode (
     // to execute
     .valid_out(decode_to_execute_valid),
     .ecause_out(decode_to_execute_ecause),
-    .exception_out(decode_to_execute_exception),
+    .exception_out(decode_to_execute_exception)
 );
 
 wire [31:0] decode_to_execute_pc;
@@ -350,7 +350,7 @@ execute pipeline_execute (
     // to memory
     .valid_out(execute_to_memory_valid),
     .ecause_out(execute_to_memory_ecause),
-    .exception_out(execute_to_memory_exception),
+    .exception_out(execute_to_memory_exception)
 );
 
 wire [31:0] execute_to_memory_pc;
@@ -434,7 +434,7 @@ memory pipeline_memory (
     // to writeback
     .valid_out(memory_to_writeback_valid),
     .ecause_out(memory_to_writeback_ecause),
-    .exception_out(memory_to_writeback_exception),
+    .exception_out(memory_to_writeback_exception)
 );
 
 wire [31:0] memory_to_writeback_pc;
@@ -495,7 +495,7 @@ writeback pipeline_writeback (
     .retired(writeback_to_csr_retired),
     .ecp(writeback_to_csr_ecp),
     .ecause(writeback_to_csr_trap_cause),
-    .interupt(writeback_to_csr_interupt),
+    .interupt(writeback_to_csr_interupt)
 );
 
 endmodule

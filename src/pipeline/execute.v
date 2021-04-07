@@ -62,7 +62,7 @@ module execute (
     // to memory
     output reg valid_out,
     output reg [3:0] ecause_out,
-    output reg exception_out,
+    output reg exception_out
 );
 
 `include "../params.vh"
@@ -72,7 +72,7 @@ cmp ex_cmp (
     .input_a(rs1_data_in),
     .input_b(rs2_data_in),
     .function_select(cmp_function_in),
-    .result(cmp_output),
+    .result(cmp_output)
 );
 
 reg [31:0] alu_input_a;
@@ -83,12 +83,12 @@ always @(*) begin
         ALU_SEL_REG : alu_input_a = rs1_data_in;
         ALU_SEL_IMM : alu_input_a = imm_data_in;
         ALU_SEL_PC  : alu_input_a = pc_in;
-        ALU_SEL_CSR : alu_input_b = csr_data_in;
+        ALU_SEL_CSR : alu_input_a = csr_data_in;
     endcase
     case (alu_select_b_in)
         ALU_SEL_REG : alu_input_b = rs2_data_in;
         ALU_SEL_IMM : alu_input_b = imm_data_in;
-        ALU_SEL_PC  : alu_input_a = pc_in;
+        ALU_SEL_PC  : alu_input_b = pc_in;
         ALU_SEL_CSR : alu_input_b = csr_data_in;
     endcase
 end
@@ -99,7 +99,7 @@ alu ex_alu (
     .input_b(alu_input_b),
     .function_select(alu_function_in),
     .function_modifier(alu_function_modifier_in),
-    .result(alu_output),
+    .result(alu_output)
 );
 
 wire csr_exception = ((csr_read_in && !csr_readable_in) || (csr_write_in && !csr_writeable_in));

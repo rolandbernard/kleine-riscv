@@ -40,7 +40,7 @@ module writeback (
     output retired,
     output [31:0] ecp,
     output reg [3:0] ecause,
-    output reg interupt,
+    output reg interupt
 );
 
 `include "../params.vh"

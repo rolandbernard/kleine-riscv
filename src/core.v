@@ -9,7 +9,7 @@ module core (
     output [31:0] ext_address,
     output [31:0] ext_write_data,
     output reg [3:0] ext_write_strobe,
-    input [31:0] ext_read_data,
+    input [31:0] ext_read_data
 );
 
 pipeline core_pipeline (
@@ -27,7 +27,7 @@ pipeline core_pipeline (
     .mem_size(mem_size),
     .mem_signed(mem_signed),
     .mem_load(mem_load),
-    .mem_store(mem_store),
+    .mem_store(mem_store)
 );
 
 wire [31:0] fetch_data;
@@ -65,7 +65,7 @@ busio core_busio (
     .mem_size(mem_size),
     .mem_signed(mem_signed),
     .mem_load(mem_load),
-    .mem_store(mem_store),
+    .mem_store(mem_store)
 );
 
 endmodule

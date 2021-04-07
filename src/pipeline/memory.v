@@ -59,7 +59,7 @@ module memory (
     // to writeback
     output reg valid_out,
     output reg [3:0] ecause_out,
-    output reg exception_out,
+    output reg exception_out
 );
 
 wire to_execute = !exception_in && valid_in;

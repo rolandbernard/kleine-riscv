@@ -10,7 +10,7 @@ module regfile (
 
     // from writeback (write port)
     input [4:0] rd_address,
-    input [31:0] rd_data,
+    input [31:0] rd_data
 );
 
     reg [31:0] registers [0:31];

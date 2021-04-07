@@ -22,7 +22,7 @@ module busio (
     input [1:0] mem_size,
     input mem_signed,
     input mem_load,
-    input mem_store,
+    input mem_store
 );
 
 assign ext_valid = 1;
@@ -39,6 +39,8 @@ always @(*) begin
         ext_write_strobe = (4'b0011 << mem_address[1:0]);
     end else if (mem_size == 2) begin
         ext_write_strobe = 4'b1111;
+    end else begin
+        ext_write_strobe = 0;
     end
 end
 
@@ -64,6 +66,8 @@ always @(*) begin
         end
     end else if (mem_size == 2) begin
         mem_load_data = tmp_load_data;
+    end else begin
+        mem_load_data = 0;
     end
 end
 
