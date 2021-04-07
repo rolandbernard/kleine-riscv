@@ -33,7 +33,7 @@ module fetch (
 reg [31:0] pc;
 
 assign fetch_address = pc;
-wire next_pc = pc + 4;
+wire [31:0] next_pc = pc + 4;
 
 always @(posedge clk) begin
     if (reset) begin

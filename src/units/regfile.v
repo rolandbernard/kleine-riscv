@@ -40,9 +40,7 @@ module regfile (
     end
 
     always @(posedge clk) begin
-        if (rd_address != 0) begin
-            registers[rd_address] <= rd_data;
-        end
+        registers[rd_address] <= rd_data;
     end
 
 endmodule
