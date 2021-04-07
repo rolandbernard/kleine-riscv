@@ -174,6 +174,20 @@ always @(*) begin
 end
 
 always @(posedge clk) begin
+    if (traped) begin
+        pie = ie;
+        ie = 0;
+        mecp = ecp;
+        minterupt = interupt;
+        mcause = trap_cause;
+    end else if (mret) begin
+        ie = pie;
+        pie = 1;
+    end
+    cycle = cycle + 1;
+    if (retired) begin
+        instret = instret + 1;
+    end
     if (write_enable) begin
         casez (write_address)
             12'h300: begin // mstatus
@@ -216,23 +230,6 @@ always @(posedge clk) begin
                 instret[63:32] <= write_data;
             end
         endcase
-    end
-end
-
-always @(posedge clk) begin
-    if (traped) begin
-        pie = ie;
-        ie = 0;
-        mecp = ecp;
-        minterupt = interupt;
-        mcause = trap_cause;
-    end else if (mret) begin
-        ie = pie;
-        pie = 1;
-    end
-    cycle = cycle + 1;
-    if (retired) begin
-        instret = instret + 1;
     end
 end
 

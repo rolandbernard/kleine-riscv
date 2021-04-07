@@ -53,7 +53,7 @@ module memory (
     output reg [1:0] write_select_out,
     output reg [4:0] rd_address_out,
     output reg [11:0] csr_address_out,
-    output csr_write_out,
+    output reg csr_write_out,
     output reg mret_out,
     output reg wfi_out,
     // to writeback
@@ -98,6 +98,7 @@ always @(posedge clk) begin
             write_select_out <= write_select_in;
             rd_address_out <= rd_address_in;
             csr_address_out <= csr_address_in;
+            csr_write_out <= csr_write_in;
             mret_out <= mret_in;
             wfi_out <= wfi_in;
             if (!exception_in && branch_taken_in && !valid_branch_address) begin
