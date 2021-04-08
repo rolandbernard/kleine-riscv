@@ -1,5 +1,5 @@
 module busio (
-    input clk,
+    /* input clk, */
     
     // External interface
     output ext_valid,

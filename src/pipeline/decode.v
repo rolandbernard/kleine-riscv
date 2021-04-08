@@ -61,7 +61,19 @@ module decode (
     output reg exception_out
 );
 
-`include "../params.vh"
+localparam ALU_ADD_SUB = 3'b000;
+localparam ALU_OR      = 3'b110;
+localparam ALU_AND_CLR = 3'b111;
+
+localparam ALU_SEL_REG = 2'b00;
+localparam ALU_SEL_IMM = 2'b01;
+localparam ALU_SEL_PC  = 2'b10;
+localparam ALU_SEL_CSR = 2'b11;
+
+localparam WRITE_SEL_ALU     = 2'b00;
+localparam WRITE_SEL_CSR     = 2'b01;
+localparam WRITE_SEL_LOAD    = 2'b10;
+localparam WRITE_SEL_NEXT_PC = 2'b11;
 
 wire [31:0] instr = instruction_in;
 
@@ -246,6 +258,7 @@ always @(posedge clk) begin
                             alu_select_a_out <= ALU_SEL_REG;
                             csr_read_out <= (rd_address != 0);
                             csr_write_out <= 1;
+                            write_select_out <= WRITE_SEL_CSR;
                         end
                         3'b010: begin // CSRRS
                             rd_address_out <= rd_address;
@@ -253,6 +266,7 @@ always @(posedge clk) begin
                             alu_select_b_out <= ALU_SEL_CSR;
                             csr_read_out <= 1;
                             csr_write_out <= (rs1_address != 0);
+                            write_select_out <= WRITE_SEL_CSR;
                         end
                         3'b011: begin // CSRRC
                             rd_address_out <= rd_address;
@@ -262,12 +276,14 @@ always @(posedge clk) begin
                             alu_select_b_out <= ALU_SEL_CSR;
                             csr_read_out <= 1;
                             csr_write_out <= (rs1_address != 0);
+                            write_select_out <= WRITE_SEL_CSR;
                         end
                         3'b101: begin // CSRRWI
                             rd_address_out <= rd_address;
                             imm_data_out <= csr_type_imm_data;
                             csr_read_out <= (rd_address != 0);
                             csr_write_out <= 1;
+                            write_select_out <= WRITE_SEL_CSR;
                         end
                         3'b110: begin // CSRRSI
                             rd_address_out <= rd_address;
@@ -275,6 +291,7 @@ always @(posedge clk) begin
                             imm_data_out <= csr_type_imm_data;
                             csr_read_out <= 1;
                             csr_write_out <= (rs1_address != 0);
+                            write_select_out <= WRITE_SEL_CSR;
                         end
                         3'b111: begin // CSRRCI
                             rd_address_out <= rd_address;
@@ -284,6 +301,7 @@ always @(posedge clk) begin
                             imm_data_out <= csr_type_imm_data;
                             csr_read_out <= 1;
                             csr_write_out <= (rs1_address != 0);
+                            write_select_out <= WRITE_SEL_CSR;
                         end
                         default: begin
                             ecause_out <= 2;

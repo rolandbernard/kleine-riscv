@@ -1,5 +1,6 @@
 module writeback (
-    input clk,
+    /* input clk, */
+
     // from memory
     input [31:0] pc_in,
     input [31:0] next_pc_in,
@@ -43,7 +44,10 @@ module writeback (
     output reg interupt
 );
 
-`include "../params.vh"
+localparam WRITE_SEL_ALU     = 2'b00;
+localparam WRITE_SEL_CSR     = 2'b01;
+localparam WRITE_SEL_LOAD    = 2'b10;
+localparam WRITE_SEL_NEXT_PC = 2'b11;
 
 wire to_execute = !exception_in && valid_in;
 

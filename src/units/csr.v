@@ -32,7 +32,6 @@ module csr (
 
 reg [63:0] cycle;
 reg [63:0] instret;
-reg [31:0] mstatus;
 reg pie;
 reg ie;
 reg meie;

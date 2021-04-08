@@ -44,7 +44,7 @@ wire mem_store;
 wire mem_ready;
 
 busio core_busio (
-    .clk(clk),
+    /* .clk(clk), */
 
     .ext_valid(ext_valid),
     .ext_instruction(ext_instruction),

@@ -25,3 +25,4 @@ localparam WRITE_SEL_ALU     = 2'b00;
 localparam WRITE_SEL_CSR     = 2'b01;
 localparam WRITE_SEL_LOAD    = 2'b10;
 localparam WRITE_SEL_NEXT_PC = 2'b11;
+

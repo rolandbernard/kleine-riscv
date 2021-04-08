@@ -21,7 +21,7 @@ module pipeline (
     output mem_store
 );
 
-csr control_registers (
+csr pipeline_csr (
     .clk(clk),
 
     // from decode (read port)
@@ -74,7 +74,7 @@ wire [31:0] csr_to_fetch_mret_vector;
 wire global_traped;
 wire global_mret;
 
-regfile registers (
+regfile pipeline_registers (
     .clk(clk),
 
     // from decode (read ports)
@@ -97,7 +97,7 @@ wire [31:0] regfile_to_decode_rs2_data;
 wire [4:0] writeback_to_regfile_rd_address;
 wire [31:0] writeback_to_regfile_rd_data;
 
-hazard hazard_control (
+hazard pipeline_hazard (
     .reset(reset),
 
     // from decode
@@ -453,7 +453,7 @@ wire [3:0] memory_to_writeback_ecause;
 wire memory_to_writeback_exception;
 
 writeback pipeline_writeback (
-    .clk(clk),
+    /* .clk(clk), */
 
     // from memory
     .pc_in(memory_to_writeback_pc),

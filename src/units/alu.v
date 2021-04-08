@@ -8,9 +8,18 @@ module alu (
     output reg [31:0] result
 );
 
-`include "../params.vh"
+localparam ALU_ADD_SUB = 3'b000;
+localparam ALU_SLL     = 3'b001;
+localparam ALU_SLT     = 3'b010;
+localparam ALU_SLTU    = 3'b011;
+localparam ALU_XOR     = 3'b100;
+localparam ALU_SRL_SRA = 3'b101;
+localparam ALU_OR      = 3'b110;
+localparam ALU_AND_CLR = 3'b111;
 
+/* verilator lint_off UNUSED */ // The first bit [32] will intentionally be ignored (TODO?)
 wire [32:0] tmp_shifted = $signed({function_modifier ? input_a[31] : 1'b0, input_a}) >>> input_b[4:0];
+/* verilator lint_on UNUSED */
 
 always @(*) begin
     case (function_select)

@@ -65,7 +65,10 @@ module execute (
     output reg exception_out
 );
 
-`include "../params.vh"
+localparam ALU_SEL_REG = 2'b00;
+localparam ALU_SEL_IMM = 2'b01;
+localparam ALU_SEL_PC  = 2'b10;
+localparam ALU_SEL_CSR = 2'b11;
 
 wire cmp_output;
 cmp ex_cmp (
