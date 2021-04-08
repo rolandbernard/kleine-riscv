@@ -15,15 +15,15 @@ using namespace std;
 #define ALU_OR      0b110
 #define ALU_AND_CLR 0b111
 
-#include "rtl/alu.cpp"
+#include "Valu.h"
 
 int main() {
-    cxxrtl_design::p_alu top;
+    Valu top;
 
     bool prev_led = 0;
 
-    top.step();
-    for (int cycle = 0; cycle < 1000000; ++cycle) {
+    top.eval();
+    for (int cycle = 0; cycle < 10000000; ++cycle) {
 
         uint32_t in1 = rand();
         uint32_t in2 = rand();
@@ -39,14 +39,14 @@ int main() {
         if (func == ALU_SLL || func == ALU_SRL_SRA) {
             in2 %= 32;
         }
-        top.p_input__a.set<uint32_t>(in1);
-        top.p_input__b.set<uint32_t>(in2);
-        top.p_function__select.set<uint32_t>(func);
-        top.p_function__modifier.set<uint32_t>(func_sel);
+        top.input_a = in1;
+        top.input_b = in2;
+        top.function_select = func;
+        top.function_modifier = func_sel;
 
-        top.step();
+        top.eval();
 
-        uint32_t out = top.p_result.get<uint32_t>();
+        uint32_t out = top.result;
         
         switch (func) {
         case ALU_ADD_SUB:

@@ -1,42 +1,46 @@
 
-CXX=clang++
-YOSYS=yosys
+# == Directories
+SRC_DIR   := src
+BUILD_DIR := build
+TEST_DIR  := tests
+ISA_DIR   := $(TEST_DIR)/isa
+UNITS_DIR := $(TEST_DIR)/units
+# ==
 
-BUILD=build
-RTL=$(BUILD)/rtl
-BIN=$(BUILD)/test
-SRC=src
-UTEST=tests/units
+# == Files
+UNIT_SRC   := $(shell find $(UNITS_DIR) -type f -name '*.cpp')
+UNIT_TESTS := $(patsubst $(UNITS_DIR)/%.cpp, $(BUILD_DIR)/V%, $(UNIT_SRC))
+ISA_SRC    := $(shell find $(ISA_DIR) -type f -name '*.S')
+ISA_TESTS  := $(patsubst $(ISA_DIR)/%.S, $(ISA_DIR)/build/%.bin, $(ISA_SRC))
+# ==
 
-VRLS=$(shell find $(SRC) -type f -name '*.v')
-RTLS=$(patsubst $(SRC)/%.v, $(RTL)/%.cpp, $(VRLS))
+# == Runing goals
+RUNTESTS  := $(addprefix RUNTEST.,$(UNIT_TESTS) $(ISA_TESTS))
+# ==
 
-SIMS=$(shell find $(UTEST) -type f -name '*.cpp')
-UTESTS=$(patsubst $(UTEST)/%.cpp, $(BIN)/%, $(SIMS))
-RUNTESTS=$(addprefix RUNTEST.,$(UTESTS))
+# == Verilator config
+VERILATOR := verilator
+VERIFLAGS := $(addprefix -I,$(shell find $(SRC_DIR) -type d)) -Wall -Mdir $(BUILD_DIR)
+# ==
 
 .SILENT:
 .SECONDARY:
+.SECONDEXPANSION:
 .PHONY: test build-tests RUNTEST.$(BIN)/%
 
 test: $(RUNTESTS)
 
-$(RTL)/%.cpp: $(SRC)/units/%.v
+$(BUILD_DIR)/V%: $(SRC_DIR)/units/%.v $(UNITS_DIR)/%.cpp | $$(dir $$@)
 	@echo Building $@
-	mkdir -p $(shell dirname $@)
-	$(YOSYS) -g -q -b cxxrtl -o $@ $<
+	$(VERILATOR) $(VERIFLAGS) --cc --exe --build $^
 
-$(RTL)/core.cpp: $(VRLS)
-	@echo Building $@
-	mkdir -p $(shell dirname $@)
-	$(YOSYS) -g -q -b cxxrtl $^ -o $@
+%/:
+	mkdir -p $@
 
-$(BIN)/%: $(UTEST)/%.cpp $(RTL)/%.cpp
-	@echo Building $@
-	mkdir -p $(shell dirname $@)
-	$(CXX) -g -I$(shell yosys-config --datdir)/include -I$(BUILD) -o $@ $<
+$(ITEST)/build/%.bin: $(ITEST)/build/%.bin
+	$(MAKE) -C tests/isa
 
-RUNTEST.$(BIN)/%: $(BIN)/%
+RUNTEST.$(BUILD_DIR)/%: $(BUILD_DIR)/%
 	@echo "Running test $(notdir $<)"
 	$<
 

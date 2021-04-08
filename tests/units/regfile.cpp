@@ -6,10 +6,10 @@
 
 using namespace std;
 
-#include "rtl/regfile.cpp"
+#include "Vregfile.h"
 
 int main() {
-    cxxrtl_design::p_regfile top;
+    Vregfile top;
 
     bool prev_led = 0;
 
@@ -22,25 +22,25 @@ int main() {
         regs[i] = 0;
     }
 
-    top.step();
-    for (int cycle = 0; cycle < 1000000; ++cycle) {
-        top.p_clk.set<bool>(false);
-        top.step();
+    top.eval();
+    for (int cycle = 0; cycle < 10000000; ++cycle) {
+        top.clk = 0;
+        top.eval();
 
         uint32_t rs1 = rand() % 32;
         uint32_t rs2 = rand() % 32;
         uint32_t rd = rand() % 32;
         uint32_t rd_value = rand();
 
-        top.p_rs1__address.set<uint32_t>(rs1);
-        top.p_rs2__address.set<uint32_t>(rs2);
-        top.p_rd__address.set<uint32_t>(rd);
-        top.p_rd__data.set<uint32_t>(rd_value);
+        top.rs1_address = rs1;
+        top.rs2_address = rs2;
+        top.rd_address = rd;
+        top.rd_data = rd_value;
         
-        top.step();
+        top.eval();
         
-        uint32_t rs1_out = top.p_rs1__data.get<uint32_t>();
-        uint32_t rs2_out = top.p_rs2__data.get<uint32_t>();
+        uint32_t rs1_out = top.rs1_data;
+        uint32_t rs2_out = top.rs2_data;
 
         // The read should "happen" before the reads
         if (rd != 0) {
@@ -54,8 +54,8 @@ int main() {
             assert(rs2_out == regs[rs2]);
         }
 
-        top.p_clk.set<bool>(true);
-        top.step();
+        top.clk = 1;
+        top.eval();
     }
 
     return EXIT_SUCCESS;

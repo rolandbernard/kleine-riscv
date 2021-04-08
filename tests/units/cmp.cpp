@@ -5,15 +5,15 @@
 
 using namespace std;
 
-#include "rtl/cmp.cpp"
+#include "Vcmp.h"
 
 int main() {
-    cxxrtl_design::p_cmp top;
+    Vcmp top;
 
     bool prev_led = 0;
 
-    top.step();
-    for (int cycle = 0; cycle < 1000000; ++cycle) {
+    top.eval();
+    for (int cycle = 0; cycle < 10000000; ++cycle) {
 
         uint32_t in1 = rand();
         uint32_t in2 = rand();
@@ -27,14 +27,14 @@ int main() {
         bool less = rand() < RAND_MAX / 2;
         bool sign = rand() < RAND_MAX / 2;
         bool negate = rand() < RAND_MAX / 2;
-        top.p_input__a.set<uint32_t>(in1);
-        top.p_input__b.set<uint32_t>(in2);
+        top.input_a = in1;
+        top.input_b = in2;
 
-        top.p_function__select.set<uint32_t>((less << 2) | (sign << 1) | (negate));
+        top.function_select = (less << 2) | (sign << 1) | (negate);
 
-        top.step();
+        top.eval();
 
-        bool out = top.p_result.get<bool>();
+        bool out = top.result;
 
         bool expected;
         switch ((less << 2) | (sign << 1) | (negate)) {
