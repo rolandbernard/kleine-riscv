@@ -1,6 +1,7 @@
 
 build/
 .vscode/
+/obj_dir
 
 callgrind.*
 perf.*
