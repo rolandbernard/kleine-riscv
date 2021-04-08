@@ -76,7 +76,9 @@ always @(*) begin
             readable = 1;
             writeable = 0;
         end
-        12'hc0?, 12'hc1?, 12'hc8?, 12'hc9?: begin // hpmcounterX, hpmcounterXh
+        12'hc03, 12'hc04, 12'hc05, 12'hc06, 12'hc07, 12'hc08, 12'hc09, 12'hc0a, 12'hc0b, 12'hc0c, 12'hc0d, 12'hc0e, 12'hc0f, 12'hc1?,
+        12'hc83, 12'hc84, 12'hc85, 12'hc86, 12'hc87, 12'hc88, 12'hc89, 12'hc8a, 12'hc8b, 12'hc8c, 12'hc8d, 12'hc8e, 12'hc8f,
+        12'hc9?: begin // hpmcounterX, hpmcounterXh
             read_data = 0;
             readable = 1;
             writeable = 0;
@@ -155,7 +157,9 @@ always @(*) begin
             readable = 1;
             writeable = 1;
         end
-        12'hb0?, 12'hb1?, 12'hb8?, 12'hb9?: begin // mhpmcounterX, mhpmcounterXh
+        12'hb03, 12'hb04, 12'hb05, 12'hb06, 12'hb07, 12'hb08, 12'hb09, 12'hb0a, 12'hb0b, 12'hb0c, 12'hb0d, 12'hb0e, 12'hb0f, 12'hb1?,
+        12'hb83, 12'hb84, 12'hb85, 12'hb86, 12'hb87, 12'hb88, 12'hb89, 12'hb8a, 12'hb8b, 12'hb8c, 12'hb8d, 12'hb8e, 12'hb8f,
+        12'hb9?: begin // mhpmcounterX, mhpmcounterXh
             read_data = 0;
             readable = 1;
             writeable = 1;
