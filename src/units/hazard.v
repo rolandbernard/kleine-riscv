@@ -14,6 +14,7 @@ module hazard (
     input csr_write_memory,
     input branch_taken,
     input mret_memory,
+    input load_store,
 
     // from writeback
     input csr_write_writeback,
@@ -41,24 +42,26 @@ module hazard (
     output invalidate_memory
 );
 
-assign stall_fetch = !invalidate_fetch && (
-    stall_decode
-    || rs1_address_decode == rd_address_execute
-    || rs2_address_decode == rd_address_execute
-    || rs1_address_decode == rd_address_memory
-    || rs2_address_decode == rd_address_memory
-    || csr_write_execute || csr_write_memory || csr_write_writeback
-);
-assign stall_decode = !invalidate_decode && stall_execute;
-assign stall_execute = !invalidate_execute && (stall_memory || !mem_ready || mret_memory);
+assign stall_fetch = !invalidate_fetch && (stall_decode || invalidate_decode);
+assign stall_decode = !invalidate_decode && (stall_execute || invalidate_execute);
+assign stall_execute = !invalidate_execute && (stall_memory || invalidate_memory || (!mem_ready && load_store) || mret_memory);
 assign stall_memory = 0;
 
 wire trap_invalidate = mret_writeback || traped;
 wire branch_invalidate = branch_taken || trap_invalidate;
 
 assign invalidate_fetch = reset || branch_invalidate || !fetch_ready;
-assign invalidate_decode = reset || branch_invalidate;
+assign invalidate_decode = reset || branch_invalidate
+    || (rd_address_execute != 0 && (
+        rs1_address_decode == rd_address_execute
+        || rs2_address_decode == rd_address_execute
+    ))
+    || (rd_address_memory != 0 && (
+        rs1_address_decode == rd_address_memory
+        || rs2_address_decode == rd_address_memory
+    ))
+    || csr_write_execute || csr_write_memory || csr_write_writeback;
 assign invalidate_execute = reset || branch_invalidate;
-assign invalidate_memory = reset || trap_invalidate || !mem_ready;
+assign invalidate_memory = reset || trap_invalidate || (!mem_ready && load_store);
 
 endmodule
