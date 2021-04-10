@@ -12,6 +12,7 @@ module regfile (
     input [4:0] rd_address,
     input [31:0] rd_data
 );
+// TODO: add bypass for some operations to reduce stalls
 
     reg [31:0] registers [0:31];
 

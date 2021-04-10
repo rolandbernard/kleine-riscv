@@ -42,6 +42,8 @@ module hazard (
     output invalidate_memory
 );
 
+// TODO: review stall/invalidate logic
+
 assign stall_fetch = !invalidate_fetch && (stall_decode || invalidate_decode);
 assign stall_decode = !invalidate_decode && (stall_execute || invalidate_execute);
 assign stall_execute = !invalidate_execute && (stall_memory || invalidate_memory || (!mem_ready && load_store) || mret_memory);

@@ -30,6 +30,8 @@ module csr (
     output [31:0] mret_vector
 );
 
+// TODO: add mashine mode tests
+
 reg [63:0] cycle;
 reg [63:0] instret;
 reg pie;

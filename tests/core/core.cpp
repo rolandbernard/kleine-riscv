@@ -58,6 +58,7 @@ struct MagicMemory {
 };
 
 int main(int argc, char** argv) {
+    // TODO: add direct .elf loading
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " [FILE]" << std::endl;
     } else {
