@@ -9,3 +9,5 @@ gmon.*
 test.*
 compile_flags.txt
 
+.vimspector.json
+
