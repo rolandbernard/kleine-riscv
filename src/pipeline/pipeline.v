@@ -112,7 +112,7 @@ hazard pipeline_hazard (
     .rd_address_memory(execute_to_memory_valid ? execute_to_memory_rd_address : 0),
     .csr_write_memory(execute_to_memory_valid ? execute_to_memory_csr_write : 0),
     .branch_taken(global_branch_taken),
-    .mret_memory(execute_to_memory_mret),
+    .mret_memory(execute_to_memory_valid ? execute_to_memory_mret : 0),
     .load_store(mem_load || mem_store),
 
     // from writeback

@@ -77,7 +77,7 @@ localparam WRITE_SEL_NEXT_PC = 2'b11;
 
 wire [31:0] instr = instruction_in;
 
-assign rs1_address = instr[19:15];
+assign rs1_address = instr[19:15]; // TODO: This causes unnecessary stalls (Chnage something here or in the hazard unit)
 assign rs2_address = instr[24:20];
 assign csr_address = instr[31:20];
                 
@@ -109,6 +109,7 @@ always @(posedge clk) begin
             alu_select_a_out <= ALU_SEL_IMM;
             alu_select_b_out <= ALU_SEL_IMM;
             write_select_out <= WRITE_SEL_ALU;
+            jump_out <= 0;
             branch_out <= 0;
             load_out <= 0;
             store_out <= 0;
