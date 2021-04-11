@@ -37,6 +37,9 @@ module writeback (
     output traped,
     output mret,
 
+    // to hazard
+    output wfi,
+
     // to csr
     output retired,
     output [31:0] ecp,
@@ -51,12 +54,13 @@ localparam WRITE_SEL_NEXT_PC = 2'b11;
 
 wire to_execute = !exception_in && valid_in;
 
-assign traped = (sip || tip || eip || exception_in);
+assign traped = (sip || tip || eip || (exception_in && valid_in));
 assign ecp = wfi_in ? next_pc_in : pc_in;
+assign wfi = wfi_in;
 
 assign retired = to_execute && !traped;
 
-assign mret = mret_in;
+assign mret = mret_in && to_execute;
 
 always @(*) begin
     if (eip) begin

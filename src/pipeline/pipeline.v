@@ -73,6 +73,7 @@ wire [31:0] csr_to_fetch_mret_vector;
 
 wire global_traped;
 wire global_mret;
+wire global_wfi;
 
 regfile pipeline_registers (
     .clk(clk),
@@ -119,6 +120,7 @@ hazard pipeline_hazard (
     .csr_write_writeback(memory_to_writeback_valid ? writeback_to_csr_write_enable : 0),
     .mret_writeback(global_mret),
     .traped(global_traped),
+    .wfi(global_wfi),
 
     // from busio
     .fetch_ready(fetch_ready),
@@ -491,6 +493,8 @@ writeback pipeline_writeback (
     // to fetch and csr and hazard
     .traped(global_traped),
     .mret(global_mret),
+    // to hazard
+    .wfi(global_wfi),
 
     // to csr
     .retired(writeback_to_csr_retired),

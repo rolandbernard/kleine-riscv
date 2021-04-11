@@ -19,6 +19,7 @@ module hazard (
     // from writeback
     input csr_write_writeback,
     input mret_writeback,
+    input wfi,
     input traped,
 
     // from busio
@@ -47,7 +48,7 @@ module hazard (
 assign stall_fetch = !invalidate_fetch && (stall_decode || invalidate_decode);
 assign stall_decode = !invalidate_decode && (stall_execute || invalidate_execute);
 assign stall_execute = !invalidate_execute && (stall_memory || invalidate_memory || (!mem_ready && load_store) || mret_memory);
-assign stall_memory = 0;
+assign stall_memory = !invalidate_memory && wfi;
 
 wire trap_invalidate = mret_writeback || traped;
 wire branch_invalidate = branch_taken || trap_invalidate;
