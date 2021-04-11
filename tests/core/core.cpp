@@ -62,6 +62,8 @@ struct MagicMemory {
     }
 };
 
+#define CYCLE_MAXIMUM 100000
+
 int main(int argc, char** argv) {
     // TODO: add direct .elf loading
     if (argc != 2) {
@@ -79,7 +81,7 @@ int main(int argc, char** argv) {
         core.reset = 0;
         core.eval();
         memory.handleRequest(core);
-        for (;;) {
+        for (int i = 0; i < CYCLE_MAXIMUM; i++) {
             core.eval();
             core.clk = 1;
             core.eval();
@@ -87,6 +89,8 @@ int main(int argc, char** argv) {
             core.eval();
             memory.handleRequest(core);
         }
+        std::cerr << "Terminated after " << CYCLE_MAXIMUM << " cycles" << std::endl;
     }
+    return EXIT_FAILURE;
 }
 
