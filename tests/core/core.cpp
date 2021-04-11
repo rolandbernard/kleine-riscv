@@ -25,9 +25,35 @@ struct MagicMemory {
                         exit(EXIT_SUCCESS);
                     } else if ((core.ext_write_data & 0x100) != 0) {
                         if (core.ext_write_data & 0x7000000) {
-                            std::cerr << "Failed with unhandled interrupt " << (core.ext_write_data & 0xff) << std::endl;
+                            static const char* exception_name[] = {
+                                "user software",       "supervisor software",
+                                "hypervisor software", "machine software",
+                                "user timer",          "supervisor timer",
+                                "hypervisor timer",    "machine timer",
+                                "user external",       "supervisor external",
+                                "hypervisor external", "machine external",
+                            };
+                            if ((core.ext_write_data & 0xff) < 12) {
+                                std::cerr << "Failed with unhandled interrupt '" << exception_name[core.ext_write_data & 0xff] << "'" << std::endl;
+                            } else {
+                                std::cerr << "Failed with unhandled interrupt " << (core.ext_write_data & 0xff) << std::endl;
+                            }
                         } else {
-                            std::cerr << "Failed with unhandled exception " << (core.ext_write_data & 0xff) << std::endl;
+                            static const char* exception_name[] = {
+                                "misaligned fetch",    "fetch access",
+                                "illegal instruction", "breakpoint",
+                                "misaligned load",     "load access",
+                                "misaligned store",    "store access",
+                                "user_ecall",          "supervisor_ecall",
+                                "hypervisor_ecall",    "machine_ecall",
+                                "fetch page fault",    "load page fault",
+                                "reserved for std",    "store page fault",
+                            };
+                            if ((core.ext_write_data & 0xff) < 16) {
+                                std::cerr << "Failed with unhandled exception '" << exception_name[core.ext_write_data & 0xff] << "'" << std::endl;
+                            } else {
+                                std::cerr << "Failed with unhandled exception " << (core.ext_write_data & 0xff) << std::endl;
+                            }
                         }
                         exit(EXIT_FAILURE);
                     } else {
