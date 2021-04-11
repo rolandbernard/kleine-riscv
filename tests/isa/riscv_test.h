@@ -8,6 +8,8 @@
 #define RVTEST_RV32U
 #define RVTEST_RV32M
 
+#define TESTNUM gp
+
 //-----------------------------------------------------------------------
 // Begin Macro
 //-----------------------------------------------------------------------
@@ -63,14 +65,11 @@ trap_vector:                                                            \
         la t5, mtvec_handler;                                           \
         beqz t5, 1f;                                                    \
         jr t5;                                                          \
-        /* was it an interrupt or an exception? */                      \
-  1:    csrr t5, mcause;                                                \
-        bgez t5, handle_exception;                                      \
+        /* what was the trap cause? */                                  \
+  1:    csrr TESTNUM, mcause;                                           \
 handle_exception:                                                       \
-        /* we don't know how to handle whatever the exception was */    \
-  other_exception:                                                      \
         /* some unhandlable exception occurred */                       \
-  1:    ori TESTNUM, TESTNUM, 1337;                                     \
+        ori TESTNUM, TESTNUM, 0x100;                                    \
   write_tohost:                                                         \
         li t0, 0x10000000;                                              \
         sw TESTNUM, 0(t0);                                              \
@@ -94,18 +93,10 @@ reset_vector:                                                           \
 #define RVTEST_PASS                                                     \
         fence;                                                          \
         li TESTNUM, 1;                                                  \
-        li a7, 93;                                                      \
-        li a0, 0;                                                       \
         ecall
 
-#define TESTNUM gp
 #define RVTEST_FAIL                                                     \
         fence;                                                          \
-1:      beqz TESTNUM, 1b;                                               \
-        sll TESTNUM, TESTNUM, 1;                                        \
-        or TESTNUM, TESTNUM, 1;                                         \
-        li a7, 93;                                                      \
-        addi a0, TESTNUM, 0;                                            \
         ecall
 
 //-----------------------------------------------------------------------

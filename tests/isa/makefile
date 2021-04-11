@@ -24,7 +24,7 @@ CFLAGS += -Wl,-Bstatic,--strip-debug -I$(SRC_DIR) -mno-relax -fuse-ld=lld
 
 all: $(TEST_BINS)
 
-$(BUILD_DIR)/%.elf: $(SRC_DIR)/%.S | $$(dir $$@)
+$(BUILD_DIR)/%.elf: $(SRC_DIR)/%.S ./riscv_test.h | $$(dir $$@)
 	@echo "Building $@"
 	$(CC) $(CFLAGS) $< -o $@
 

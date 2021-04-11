@@ -20,8 +20,13 @@ struct MagicMemory {
                     core.ext_read_data = 0;
                 }
             } else {
-                if (0x10000000 & core.ext_address) {
-                    exit(core.ext_write_data);
+                if (0x10000000 == core.ext_address) {
+                    if (core.ext_write_data == 1) {
+                        exit(EXIT_SUCCESS);
+                    } else {
+                        std::cerr << "Failed test case #" << core.ext_write_data << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
                 } else {
                     uint32_t new_data = data[core.ext_address];
                     for (int i = 0; i < 4; i++) {
@@ -66,13 +71,11 @@ int main(int argc, char** argv) {
         Vcore core;
         memory.loadFromFile(std::string(argv[1]));
         core.reset = 1;
-        core.eval();
         core.clk = 0;
         core.eval();
         core.clk = 1;
         core.eval();
         core.clk = 0;
-        core.eval();
         core.reset = 0;
         core.eval();
         memory.handleRequest(core);
