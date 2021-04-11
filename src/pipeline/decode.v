@@ -210,8 +210,8 @@ always @(posedge clk) begin
                         exception_out <= 1;
                     end
                 end
-                7'b0001111 : begin // FENCE
-                    if (instr[14:12] != 0) begin
+                7'b0001111 : begin // FENCE / FENCE.I
+                    if (instr[14:13] != 0) begin
                         ecause_out <= 2;
                         exception_out <= 1;
                     end
