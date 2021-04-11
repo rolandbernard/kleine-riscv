@@ -23,6 +23,13 @@ struct MagicMemory {
                 if (0x10000000 == core.ext_address) {
                     if (core.ext_write_data == 1) {
                         exit(EXIT_SUCCESS);
+                    } else if ((core.ext_write_data & 0x100) != 0) {
+                        if (core.ext_write_data & 0x7000000) {
+                            std::cerr << "Failed with unhandled interrupt " << (core.ext_write_data & 0xff) << std::endl;
+                        } else {
+                            std::cerr << "Failed with unhandled exception " << (core.ext_write_data & 0xff) << std::endl;
+                        }
+                        exit(EXIT_FAILURE);
                     } else {
                         std::cerr << "Failed test case #" << core.ext_write_data << std::endl;
                         exit(EXIT_FAILURE);
@@ -49,10 +56,11 @@ struct MagicMemory {
     }
 
     bool loadFromFile(std::string filename) {
+        // TODO: add direct .elf loading
         std::ifstream file(filename);
         if (file.is_open()) {
             uint32_t value;
-            for (uint32_t i = 0; file >> std::hex >> value; i += 4) {
+            for (uint32_t i = 0x11100; file >> std::hex >> value; i += 4) {
                 data[i] = value;
             }
             return true;
@@ -65,7 +73,6 @@ struct MagicMemory {
 #define CYCLE_MAXIMUM 100000
 
 int main(int argc, char** argv) {
-    // TODO: add direct .elf loading
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " [FILE]" << std::endl;
     } else {

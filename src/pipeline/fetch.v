@@ -1,4 +1,6 @@
-module fetch (
+module fetch #(
+    parameter RESET_VECTOR = 32'h00011100
+) (
     input clk,
     input reset,
 
@@ -37,7 +39,7 @@ wire [31:0] next_pc = pc + 4;
 
 always @(posedge clk) begin
     if (reset) begin
-        pc <= 0;
+        pc <= RESET_VECTOR;
     end else if (trap) begin
         pc <= trap_vector;
     end else if (mret) begin
