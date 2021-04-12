@@ -1,5 +1,7 @@
 module csr (
     input clk,
+    input reset,
+
     // from decode (read port)
     input [11:0] read_address,
     // to decode (read port)
@@ -32,10 +34,10 @@ module csr (
 
 // TODO: add mashine mode tests
 
-reg [63:0] cycle;
-reg [63:0] instret;
-reg pie;
-reg ie;
+reg [63:0] cycle = 0;
+reg [63:0] instret = 0;
+reg pie = 0;
+reg ie = 0;
 reg meie;
 reg meip;
 reg msie;
@@ -45,8 +47,8 @@ reg mtip;
 reg [31:0] mtvec;
 reg [31:0] mscratch;
 reg [31:0] mecp;
-reg [3:0] mcause;
-reg minterupt;
+reg [3:0] mcause = 0;
+reg minterupt = 0;
 
 assign eip = ie && meie && meip;
 assign tip = ie && mtie && mtip;
@@ -237,6 +239,14 @@ always @(posedge clk) begin
             default: begin
             end
         endcase
+    end
+    if (reset) begin
+        ie <= 0;
+        pie <= 0;
+        mcause <= 0;
+        minterupt <= 0;
+        cycle <= 0;
+        instret <= 0;
     end
 end
 

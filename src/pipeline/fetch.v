@@ -1,5 +1,5 @@
 module fetch #(
-    parameter RESET_VECTOR = 32'h00011100
+    parameter RESET_VECTOR = 32'h0000_0000
 ) (
     input clk,
     input reset,
@@ -32,7 +32,7 @@ module fetch #(
     output reg valid_out
 );
 
-reg [31:0] pc;
+reg [31:0] pc = RESET_VECTOR;
 
 assign fetch_address = pc;
 wire [31:0] next_pc = pc + 4;

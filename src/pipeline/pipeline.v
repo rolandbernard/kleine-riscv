@@ -23,6 +23,7 @@ module pipeline (
 
 csr pipeline_csr (
     .clk(clk),
+    .reset(reset),
 
     // from decode (read port)
     .read_address(decode_to_csr_read_address),
