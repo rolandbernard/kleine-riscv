@@ -3,12 +3,11 @@
 #ifndef _ENV_PHYSICAL_SINGLE_CORE_H
 #define _ENV_PHYSICAL_SINGLE_CORE_H
 
-#include "encoding.h"
-
 #define RVTEST_RV32U
 #define RVTEST_RV32M
 
 #define TESTNUM gp
+#define CAUSE_MACHINE_ECALL 11
 
 //-----------------------------------------------------------------------
 // Begin Macro
