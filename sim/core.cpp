@@ -18,6 +18,7 @@ void Core::cycle() {
         memory_wait = memory_latency;
     } else {
         memory.delayRequest(core_logic);
+        memory_wait--;
     }
     core_logic.eval();
     core_logic.clk = 1;
