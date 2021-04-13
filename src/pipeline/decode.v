@@ -197,6 +197,13 @@ always @(posedge clk) begin
                     imm_data_out <= i_type_imm_data;
                     write_select_out <= WRITE_SEL_ALU;
                     rd_address_out <= rd_address;
+                    if (
+                        (instr[14:12] == 3'b001 && instr[31:25] != 0)
+                        || (instr[14:12] == 3'b101 && (instr[31] != 0 || instr[29:25] != 0))
+                    ) begin
+                        ecause_out <= 2;
+                        exception_out <= 1;
+                    end
                 end
                 7'b0110011 : begin // OP
                     alu_function_out <= instr[14:12];
