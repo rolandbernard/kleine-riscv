@@ -50,7 +50,7 @@ uint32_t* MagicMemory::addRamHandler(uint32_t start, uint32_t length) {
                     new_data |= (0xff << (8 * i)) & write_data;
                 }
             }
-            data[address] = new_data;
+            data[address / 4] = new_data;
         }
     };
     addHandler(handler);
