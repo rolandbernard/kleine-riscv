@@ -28,7 +28,7 @@ module busio (
 assign ext_valid = 1;
 assign ext_instruction = !(mem_load || mem_store);
 assign ext_address = ((mem_load || mem_store) ? mem_address : fetch_address) & 32'hffff_fffc;
-assign ext_write_data = mem_store_data;
+assign ext_write_data = mem_store_data << (8 * mem_address[1:0]);
 
 always @(*) begin
     if (!mem_store) begin
