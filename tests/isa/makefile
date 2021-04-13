@@ -6,7 +6,7 @@ SRC_DIR_PRIV := $(SRC_DIR)/rv32mi
 BUILD_DIR := ./build
 
 TESTS_USER := $(shell find $(SRC_DIR_USER) -type f -name '*.S')
-# TESTS_PRIV := $(shell find $(SRC_DIR_PRIV) -type f -name '*.S')
+TESTS_PRIV := $(shell find $(SRC_DIR_PRIV) -type f -name '*.S')
 TESTS      := $(TESTS_USER) $(TESTS_PRIV)
 
 TEST_BINS  := $(patsubst $(SRC_DIR)/%.S, $(BUILD_DIR)/%, $(TESTS))

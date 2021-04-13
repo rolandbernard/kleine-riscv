@@ -31,7 +31,7 @@ VERIFLAGS := $(addprefix -I,$(shell find $(SRC_DIR) -type d)) -Wall -Mdir $(BUIL
 .SILENT:
 .SECONDARY:
 .SECONDEXPANSION:
-.PHONY: test sim build-tests RUNTEST.$(BUILD_DIR)/% RUNTEST.$(ISA_DIR)/build/%
+.PHONY: test sim build-tests RUNTEST.$(BUILD_DIR)/% RUNTEST.$(ISA_DIR)/build/% $(ISA_DIR)/build
 
 test: $(RUNTESTS)
 
@@ -45,7 +45,7 @@ $(BUILD_DIR)/Vcore: $(SRC_DIR)/core.v $(SIM_SRC) | $$(dir $$@)
 	@echo Building $@
 	$(VERILATOR) $(VERIFLAGS) --cc --exe --build -LDFLAGS -lelf $^
 
-$(ISA_DIR)/build/%: $(ISA_SRC)
+$(ISA_DIR)/build: $(ISA_SRC)
 	$(MAKE) -C $(ISA_DIR)
 
 %/:
@@ -55,7 +55,7 @@ RUNTEST.$(BUILD_DIR)/%: $(BUILD_DIR)/%
 	@echo "Running test $(notdir $<)"
 	$<
 
-RUNTEST.$(ISA_DIR)/build/%: $(ISA_DIR)/build/% | $(BUILD_DIR)/Vcore
+RUNTEST.$(ISA_DIR)/build/%: $(ISA_DIR)/build/% $(BUILD_DIR)/Vcore $(ISA_DIR)/build
 	@echo "Running test $(notdir $<)"
 	$(BUILD_DIR)/Vcore -c 10000 -e $<
 
