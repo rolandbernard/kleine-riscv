@@ -99,7 +99,7 @@ always @(*) begin
         end
         12'h301: begin // misa
             //            MXL  WLRL      ZYXWVUTSRQPONMLKJIHGFEDCBA
-            read_data = {2'b0, 4'b0, 26'b00000000000000000100000000};
+            read_data = {2'b1, 4'b0, 26'b00000000000000000100000000};
             readable = 1;
             writeable = 1;
         end
