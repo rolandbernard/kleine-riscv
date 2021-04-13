@@ -20,8 +20,9 @@ struct MagicMemory {
     void handleRequest(Vcore &core);
     void delayRequest(Vcore &core);
     void addHandler(MagicMappedHandler &handler);
-    bool loadFromElfFile(const char* filename);
-    void initialize();
+    uint32_t* addRamHandler(uint32_t start, uint32_t length);
 };
+
+bool loadFromElfFile(const char* filename, uint32_t* data, uint32_t start, uint32_t length);
 
 #endif

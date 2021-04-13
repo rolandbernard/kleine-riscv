@@ -6,8 +6,8 @@ struct Core {
     Vcore core_logic;
     MagicMemory memory;
     int memory_latency;
+    int memory_wait;
 
-    void initialize();
     void reset();
     void cycle();
 };

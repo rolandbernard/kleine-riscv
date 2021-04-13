@@ -70,7 +70,7 @@ handle_exception:                                                       \
         /* some unhandlable exception occurred */                       \
         ori TESTNUM, TESTNUM, 0x100;                                    \
   write_tohost:                                                         \
-        li t0, 0x10000000;                                              \
+        li t0, 0x11000000;                                              \
         sw TESTNUM, 0(t0);                                              \
         j write_tohost;                                                 \
 reset_vector:                                                           \

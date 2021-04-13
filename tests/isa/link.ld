@@ -1,11 +1,11 @@
 
 MEMORY {
-    mem : ORIGIN = 0x00000000, LENGTH = 0x00018000
+    mem : ORIGIN = 0x80000000, LENGTH = 0x00100000
 }
 
 SECTIONS {
     .memory : {
-        . = 0x000000;
+        . = 0x80000000;
         *(.text.init);
         *(.text*);
         *(.data*);

@@ -1,5 +1,5 @@
 module fetch #(
-    parameter RESET_VECTOR = 32'h0000_0000
+    parameter RESET_VECTOR = 32'h8000_0000
 ) (
     input clk,
     input reset,

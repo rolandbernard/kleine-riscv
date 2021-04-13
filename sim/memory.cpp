@@ -10,16 +10,14 @@
 void MagicMemory::handleRequest(Vcore &core) {
     if (core.ext_valid) {
         uint32_t address = core.ext_address;
-        auto handler_iter = std::lower_bound(
-            mapping.begin(), mapping.end(), address, [](const MagicMappedHandler& mapper, uint32_t search) {
-                return mapper.start < search;
-            }
-        );
-        if (handler_iter != mapping.end() && address < handler_iter->start + handler_iter->length) {
-            if (core.ext_write_strobe == 0) {
-                core.ext_read_data = handler_iter->handle_read(address - handler_iter->start);
-            } else {
-                handler_iter->handle_write(address - handler_iter->start, core.ext_write_data, core.ext_write_strobe);
+        for (auto& handler : mapping) {
+            if (address >= handler.start && address < handler.start + handler.length) {
+                if (core.ext_write_strobe == 0) {
+                    core.ext_read_data = handler.handle_read(address - handler.start);
+                } else {
+                    handler.handle_write(address - handler.start, core.ext_write_data, core.ext_write_strobe);
+                }
+                break;
             }
         }
         core.ext_ready = true;
@@ -28,21 +26,38 @@ void MagicMemory::handleRequest(Vcore &core) {
     }
 }
 
-void MagicMemory::delayRequest(Vcore &core) {
+void MagicMemory::delayRequest(Vcore& core) {
     core.ext_ready = false;
 }
 
-void MagicMemory::addHandler(MagicMappedHandler &handler) {
+void MagicMemory::addHandler(MagicMappedHandler& handler) {
     mapping.push_back(handler);
 }
 
-void MagicMemory::initialize() {
-    std::sort(mapping.begin(), mapping.end(), [](const MagicMappedHandler& a, const MagicMappedHandler& b) {
-        return a.start < b.start;
-    });
+uint32_t* MagicMemory::addRamHandler(uint32_t start, uint32_t length) {
+    uint32_t* data = (uint32_t*)(new uint8_t[length]);
+    MagicMappedHandler handler = {
+        .start = start,
+        .length = length,
+        .handle_read = [=](uint32_t address) {
+            return data[address / 4];
+        },
+        .handle_write = [=](uint32_t address, uint32_t write_data, uint8_t strobe) {
+            uint32_t new_data = data[address / 4];
+            for (int i = 0; i < 4; i++) {
+                if (strobe & (1 << i)) {
+                    new_data &= ~(0xff << (8 * i));
+                    new_data |= (0xff << (8 * i)) & write_data;
+                }
+            }
+            data[address] = new_data;
+        }
+    };
+    addHandler(handler);
+    return data;
 }
 
-bool MagicMemory::loadFromElfFile(const char* filename) {
+bool loadFromElfFile(const char* filename, uint32_t* data, uint32_t start, uint32_t length) {
     int fd = open(filename, O_RDONLY, 0);
     if (fd == -1) {
         std::cerr << "Failed to open the file '" << filename << "'" << std::endl;
@@ -84,23 +99,17 @@ bool MagicMemory::loadFromElfFile(const char* filename) {
         }
         if (program_header.p_type == PT_LOAD) {
             Elf_Data* elf_data = elf_getdata_rawchunk(elf, program_header.p_offset, program_header.p_filesz, ELF_T_BYTE);
-            uint32_t* data = new uint32_t[program_header.p_memsz];
-            memcpy(data, elf_data->d_buf, program_header.p_filesz);
-            MagicMappedHandler handler = {
-                .start = (uint32_t)program_header.p_paddr,
-                .length = (uint32_t)program_header.p_memsz,
-                .handle_read = [=](uint32_t address) { return data[address]; },
-                .handle_write = [=](uint32_t address, uint32_t write_data, uint8_t strobe) {
-                    uint32_t new_data = data[address];
-                    for (int i = 0; i < 4; i++) {
-                        if (strobe & (1 << i)) {
-                            new_data &= ~(0xff << (8 * i));
-                            new_data |= (0xff << (8 * i)) & write_data;
-                        }
+            if (program_header.p_paddr < (start + length) && (program_header.p_paddr + program_header.p_filesz) > start) {
+                size_t copy_start = std::max(program_header.p_paddr - start, (size_t)0);
+                size_t to_copy = std::min(program_header.p_filesz, length - copy_start);
+                uint8_t* raw_data = (uint8_t*)elf_data->d_buf;
+                for (int i = 0; i < to_copy; i++) {
+                    if (i % 4 == 0) {
+                        data[i/4] = 0;
                     }
-                    data[address] = new_data;
+                    data[i/4] |= ((uint32_t)raw_data[i]) << (8*i);
                 }
-            };
+            }
         }
     }
     elf_end(elf);
