@@ -10,6 +10,7 @@
 #include "riscv_test.h"
 #include "test_macros.h"
 
+# The following are non standard/custom CSRs (The spec assumes they sould be memory mapped)
 #define mtime 0xb01
 #define mtimecmp 0xbc0
 
@@ -20,10 +21,10 @@ RVTEST_CODE_BEGIN
   csrr t0, mtime
   addi t0, t0, 1000
   csrw mtimecmp, t0
-  li t0, (1 << 7) # Enable timer interupts
-  csrrs zero, mie, t0
-  li t0, (1 << 3) # Enable global interupts
-  csrrs zero, mstatus, t0
+  li t1, (1 << 7) # Enable timer interupts
+  csrrs zero, mie, t1
+  li t1, (1 << 3) # Enable global interupts
+  csrrs zero, mstatus, t1
 1:
   wfi
   j 1b
@@ -33,9 +34,12 @@ RVTEST_CODE_BEGIN
 .global mtvec_handler
 mtvec_handler:
   # Make sure CAUSE indicates a timer interrupt
-  csrr t0, mcause
-  li t1, 0x80000007
-  bne t0, t1, fail
+  csrr t1, mcause
+  li t2, 0x80000007
+  bne t1, t2, fail
+  # Make sure time is greater or equal to the set comparison value
+  csrr t1, mtime
+  blt t1, t0, fail
   j pass
 
 RVTEST_CODE_END
