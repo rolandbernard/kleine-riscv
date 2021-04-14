@@ -105,6 +105,8 @@ hazard pipeline_hazard (
     // from decode
     .rs1_address_decode(fetch_to_decode_valid ? decode_to_regfile_rs1_address : 0),
     .rs2_address_decode(fetch_to_decode_valid ? decode_to_regfile_rs2_address : 0),
+    .uses_rs1(decode_to_hazaed_uses_rs1),
+    .uses_rs2(decode_to_hazaed_uses_rs2),
 
     // from execute
     .rd_address_execute(decode_to_execute_valid ? decode_to_execute_rd_address : 0),
@@ -143,6 +145,9 @@ hazard pipeline_hazard (
     .stall_memory(hazard_to_memory_stall),
     .invalidate_memory(hazard_to_memory_invalidate)
 );
+
+wire decode_to_hazaed_uses_rs1;
+wire decode_to_hazaed_uses_rs2;
 
 wire hazard_to_fetch_stall;
 wire hazard_to_fetch_invalidate;
@@ -209,6 +214,9 @@ decode pipeline_decode (
     // from hazard
     .stall(hazard_to_decode_stall),
     .invalidate(hazard_to_decode_invalidate),
+    // to hazard
+    .uses_rs1(decode_to_hazaed_uses_rs1),
+    .uses_rs2(decode_to_hazaed_uses_rs2),
 
     // to regfile
     .rs1_address(decode_to_regfile_rs1_address),

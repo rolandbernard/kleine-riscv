@@ -4,6 +4,8 @@ module hazard (
     // from decode
     input [4:0] rs1_address_decode,
     input [4:0] rs2_address_decode,
+    input uses_rs1,
+    input uses_rs2,
 
     // from execute
     input [4:0] rd_address_execute,
@@ -56,12 +58,12 @@ wire branch_invalidate = branch_taken || trap_invalidate;
 assign invalidate_fetch = reset || branch_invalidate || (!fetch_ready && !invalidate_decode);
 assign invalidate_decode = reset || branch_invalidate
     || (rd_address_execute != 0 && (
-        rs1_address_decode == rd_address_execute
-        || rs2_address_decode == rd_address_execute
+        uses_rs1 && rs1_address_decode == rd_address_execute
+        || uses_rs2 && rs2_address_decode == rd_address_execute
     ))
     || (rd_address_memory != 0 && (
-        rs1_address_decode == rd_address_memory
-        || rs2_address_decode == rd_address_memory
+        uses_rs1 && rs1_address_decode == rd_address_memory
+        || uses_rs2 && rs2_address_decode == rd_address_memory
     ))
     || csr_write_execute || csr_write_memory || csr_write_writeback;
 assign invalidate_execute = reset || branch_invalidate;

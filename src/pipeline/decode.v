@@ -10,6 +10,9 @@ module decode (
     // from hazard
     input stall,
     input invalidate,
+    // to hazard
+    output reg uses_rs1,
+    output reg uses_rs2,
 
     // to regfile
     output [4:0] rs1_address,
@@ -77,10 +80,47 @@ localparam WRITE_SEL_NEXT_PC = 2'b11;
 
 wire [31:0] instr = instruction_in;
 
-assign rs1_address = instr[19:15]; // TODO: This causes unnecessary stalls (Chnage something here or in the hazard unit)
+assign rs1_address = instr[19:15];
 assign rs2_address = instr[24:20];
 assign csr_address = instr[31:20];
-                
+
+always @(*) begin
+    case (instr[6:0])
+        7'b1100111, // JALR
+        7'b0000011, // LOAD
+        7'b0010011: // OP-IMM
+        begin 
+            uses_rs1 = valid_in;
+            uses_rs2 = 0;
+        end
+        7'b1100011, // Branch
+        7'b0100011, // STORE
+        7'b0110011: // OP
+        begin 
+            uses_rs1 = valid_in;
+            uses_rs2 = valid_in;
+        end
+        7'b1110011 : begin // SYSTEM
+            uses_rs2 = 0;
+            case (instr[14:12])
+                3'b001, // CSRRW
+                3'b010, // CSRRS
+                3'b011: // CSRRC
+                begin 
+                    uses_rs1 = valid_in;
+                end
+                default: begin
+                    uses_rs1 = 0;
+                end
+            endcase
+        end
+        default : begin
+            uses_rs1 = 0;
+            uses_rs2 = 0;
+        end
+    endcase
+end
+
 wire [4:0] rd_address = instr[11:7];
 
 // possible immediate values
