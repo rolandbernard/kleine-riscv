@@ -17,7 +17,7 @@ localparam ALU_SRL_SRA = 3'b101;
 localparam ALU_OR      = 3'b110;
 localparam ALU_AND_CLR = 3'b111;
 
-/* verilator lint_off UNUSED */ // The first bit [32] will intentionally be ignored (TODO?)
+/* verilator lint_off UNUSED */ // The first bit [32] will intentionally be ignored
 wire [32:0] tmp_shifted = $signed({function_modifier ? input_a[31] : 1'b0, input_a}) >>> input_b[4:0];
 /* verilator lint_on UNUSED */
 

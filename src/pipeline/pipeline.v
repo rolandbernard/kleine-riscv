@@ -93,7 +93,11 @@ regfile pipeline_registers (
 
     // from writeback (write port)
     .rd_address(writeback_to_regfile_rd_address),
-    .rd_data(writeback_to_regfile_rd_data)
+    .rd_data(writeback_to_regfile_rd_data),
+
+    // from memory (bypass)
+    .bypass_address(memory_to_regfile_bypass_address),
+    .bypass_data(memory_to_regfile_bypass_data)
 );
 
 wire [4:0] decode_to_regfile_rs1_address;
@@ -104,6 +108,9 @@ wire [31:0] regfile_to_decode_rs2_data;
 wire [4:0] writeback_to_regfile_rd_address;
 wire [31:0] writeback_to_regfile_rd_data;
 
+wire [4:0] memory_to_regfile_bypass_address;
+wire [31:0] memory_to_regfile_bypass_data;
+
 hazard pipeline_hazard (
     .reset(reset),
 
@@ -112,6 +119,7 @@ hazard pipeline_hazard (
     .rs2_address_decode(fetch_to_decode_valid ? decode_to_regfile_rs2_address : 0),
     .uses_rs1(decode_to_hazaed_uses_rs1),
     .uses_rs2(decode_to_hazaed_uses_rs2),
+    .uses_csr(decode_to_hazaed_uses_csr),
 
     // from execute
     .rd_address_execute(decode_to_execute_valid ? decode_to_execute_rd_address : 0),
@@ -123,6 +131,7 @@ hazard pipeline_hazard (
     .branch_taken(global_branch_taken),
     .mret_memory(execute_to_memory_valid ? execute_to_memory_mret : 0),
     .load_store(mem_load || mem_store),
+    .bypass_memory(memory_to_regfile_bypass_address != 0),
 
     // from writeback
     .csr_write_writeback(memory_to_writeback_valid ? writeback_to_csr_write_enable : 0),
@@ -153,6 +162,7 @@ hazard pipeline_hazard (
 
 wire decode_to_hazaed_uses_rs1;
 wire decode_to_hazaed_uses_rs2;
+wire decode_to_hazaed_uses_csr;
 
 wire hazard_to_fetch_stall;
 wire hazard_to_fetch_invalidate;
@@ -222,6 +232,7 @@ decode pipeline_decode (
     // to hazard
     .uses_rs1(decode_to_hazaed_uses_rs1),
     .uses_rs2(decode_to_hazaed_uses_rs2),
+    .uses_csr(decode_to_hazaed_uses_csr),
 
     // to regfile
     .rs1_address(decode_to_regfile_rs1_address),
@@ -261,6 +272,7 @@ decode pipeline_decode (
     .store_out(decode_to_execute_store),
     .load_store_size_out(decode_to_execute_load_store_size),
     .load_signed_out(decode_to_execute_load_signed),
+    .bypass_memory_out(decode_to_execute_bypass_memory),
     // to execute (control WB)
     .write_select_out(decode_to_execute_write_select),
     .rd_address_out(decode_to_execute_rd_address),
@@ -294,6 +306,7 @@ wire decode_to_execute_load;
 wire decode_to_execute_store;
 wire [1:0] decode_to_execute_load_store_size;
 wire decode_to_execute_load_signed;
+wire decode_to_execute_bypass_memory;
 wire [1:0] decode_to_execute_write_select;
 wire [4:0] decode_to_execute_rd_address;
 wire [11:0] decode_to_execute_csr_address;
@@ -330,6 +343,7 @@ execute pipeline_execute (
     .store_in(decode_to_execute_store),
     .load_store_size_in(decode_to_execute_load_store_size),
     .load_signed_in(decode_to_execute_load_signed),
+    .bypass_memory_in(decode_to_execute_bypass_memory),
     // from decode (control WB)
     .write_select_in(decode_to_execute_write_select),
     .rd_address_in(decode_to_execute_rd_address),
@@ -357,6 +371,7 @@ execute pipeline_execute (
     .store_out(execute_to_memory_store),
     .load_store_size_out(execute_to_memory_load_store_size),
     .load_signed_out(execute_to_memory_load_signed),
+    .bypass_memory_out(execute_to_memory_bypass_memory),
     // to memory (control WB)
     .write_select_out(execute_to_memory_write_select),
     .rd_address_out(execute_to_memory_rd_address),
@@ -380,6 +395,7 @@ wire execute_to_memory_load;
 wire execute_to_memory_store;
 wire [1:0] execute_to_memory_load_store_size;
 wire execute_to_memory_load_signed;
+wire execute_to_memory_bypass_memory;
 wire [1:0] execute_to_memory_write_select;
 wire [4:0] execute_to_memory_rd_address;
 wire [11:0] execute_to_memory_csr_address;
@@ -404,6 +420,7 @@ memory pipeline_memory (
     .store_in(execute_to_memory_store),
     .load_store_size_in(execute_to_memory_load_store_size),
     .load_signed_in(execute_to_memory_load_signed),
+    .bypass_memory_in(execute_to_memory_bypass_memory),
     // from execute (control WB)
     .write_select_in(execute_to_memory_write_select),
     .rd_address_in(execute_to_memory_rd_address),
@@ -419,6 +436,10 @@ memory pipeline_memory (
     // from hazard
     .stall(hazard_to_memory_stall),
     .invalidate(hazard_to_memory_invalidate),
+
+    // to register (bypass)
+    .bypass_address(memory_to_regfile_bypass_address),
+    .bypass_data(memory_to_regfile_bypass_data),
 
     // to busio
     .mem_address(mem_address),

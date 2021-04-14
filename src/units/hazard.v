@@ -6,6 +6,7 @@ module hazard (
     input [4:0] rs2_address_decode,
     input uses_rs1,
     input uses_rs2,
+    input uses_csr,
 
     // from execute
     input [4:0] rd_address_execute,
@@ -17,6 +18,7 @@ module hazard (
     input branch_taken,
     input mret_memory,
     input load_store,
+    input bypass_memory,
 
     // from writeback
     input csr_write_writeback,
@@ -61,11 +63,11 @@ assign invalidate_decode = reset || branch_invalidate
         uses_rs1 && rs1_address_decode == rd_address_execute
         || uses_rs2 && rs2_address_decode == rd_address_execute
     ))
-    || (rd_address_memory != 0 && (
+    || (rd_address_memory != 0 && !bypass_memory && (
         uses_rs1 && rs1_address_decode == rd_address_memory
         || uses_rs2 && rs2_address_decode == rd_address_memory
     ))
-    || csr_write_execute || csr_write_memory || csr_write_writeback;
+    || uses_csr && (csr_write_execute || csr_write_memory || csr_write_writeback);
 assign invalidate_execute = reset || branch_invalidate;
 assign invalidate_memory = reset || trap_invalidate || (!mem_ready && load_store);
 

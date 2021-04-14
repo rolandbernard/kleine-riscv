@@ -25,6 +25,7 @@ module execute (
     input store_in,
     input [1:0] load_store_size_in,
     input load_signed_in,
+    input bypass_memory_in,
     // from decode (control WB)
     input [1:0] write_select_in,
     input [4:0] rd_address_in,
@@ -52,6 +53,7 @@ module execute (
     output reg store_out,
     output reg [1:0] load_store_size_out,
     output reg load_signed_out,
+    output reg bypass_memory_out,
     // to memory (control WB)
     output reg [1:0] write_select_out,
     output reg [4:0] rd_address_out,
@@ -123,6 +125,7 @@ always @(posedge clk) begin
             load_signed_out <= load_signed_in;
             write_select_out <= write_select_in;
             rd_address_out <= rd_address_in;
+            bypass_memory_out <= bypass_memory_in;
             csr_address_out <= csr_address_in;
             csr_write_out <= csr_write_in;
             mret_out <= mret_in;

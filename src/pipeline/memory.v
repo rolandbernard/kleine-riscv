@@ -12,6 +12,7 @@ module memory (
     input store_in,
     input [1:0] load_store_size_in,
     input load_signed_in,
+    input bypass_memory_in,
     // from execute (control WB)
     input [1:0] write_select_in,
     input [4:0] rd_address_in,
@@ -27,6 +28,10 @@ module memory (
     // from hazard
     input stall,
     input invalidate,
+
+    // to writeback
+    output [4:0] bypass_address,
+    output [31:0] bypass_data,
 
     // to busio
     output [31:0] mem_address,
@@ -63,6 +68,9 @@ module memory (
 );
 
 wire to_execute = !exception_in && valid_in;
+
+assign bypass_address = (to_execute && bypass_memory_in) ? rd_address_in : 0;
+assign bypass_data = write_select_in[0] ? csr_data_in : alu_data_in;
 
 wire valid_branch_address = (alu_data_in[1:0] == 0);
 reg valid_mem_address;

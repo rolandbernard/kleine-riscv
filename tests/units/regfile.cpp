@@ -36,6 +36,7 @@ int main() {
         top.rs2_address = rs2;
         top.rd_address = rd;
         top.rd_data = rd_value;
+        top.bypass_address = 0;
         
         top.eval();
         

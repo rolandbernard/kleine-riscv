@@ -13,6 +13,7 @@ module decode (
     // to hazard
     output reg uses_rs1,
     output reg uses_rs2,
+    output reg uses_csr,
 
     // to regfile
     output [4:0] rs1_address,
@@ -52,6 +53,7 @@ module decode (
     output reg store_out,
     output reg [1:0] load_store_size_out,
     output reg load_signed_out,
+    output reg bypass_memory_out,
     // to execute (control WB)
     output reg [1:0] write_select_out,
     output reg [4:0] rd_address_out,
@@ -92,6 +94,7 @@ always @(*) begin
         begin 
             uses_rs1 = valid_in;
             uses_rs2 = 0;
+            uses_csr = 0;
         end
         7'b1100011, // Branch
         7'b0100011, // STORE
@@ -99,24 +102,41 @@ always @(*) begin
         begin 
             uses_rs1 = valid_in;
             uses_rs2 = valid_in;
+            uses_csr = 0;
         end
         7'b1110011 : begin // SYSTEM
             uses_rs2 = 0;
             case (instr[14:12])
-                3'b001, // CSRRW
+                3'b001: begin // CSRRW
+                    uses_rs1 = valid_in;
+                    uses_csr = valid_in && (rd_address != 0);
+                end
                 3'b010, // CSRRS
                 3'b011: // CSRRC
                 begin 
                     uses_rs1 = valid_in;
+                    uses_csr = valid_in;
+                end
+                3'b101: begin // CSRRWI
+                    uses_rs1 = 0;
+                    uses_csr = valid_in && (rd_address != 0);
+                end
+                3'b110, // CSRRSI
+                3'b111: // CSRRCI
+                begin 
+                    uses_rs1 = 0;
+                    uses_csr = valid_in;
                 end
                 default: begin
                     uses_rs1 = 0;
+                    uses_csr = 0;
                 end
             endcase
         end
         default : begin
             uses_rs1 = 0;
             uses_rs2 = 0;
+            uses_csr = 0;
         end
     endcase
 end
@@ -154,6 +174,7 @@ always @(posedge clk) begin
             load_out <= 0;
             store_out <= 0;
             rd_address_out <= 0;
+            bypass_memory_out <= 0;
             csr_read_out <= 0;
             csr_write_out <= 0;
             mret_out <= 0;
@@ -165,12 +186,14 @@ always @(posedge clk) begin
                 7'b0110111 : begin // LUI
                     imm_data_out <= u_type_imm_data;
                     rd_address_out <= rd_address;
+                    bypass_memory_out <= 1;
                 end
                 7'b0010111 : begin // AUIPC
                     alu_function_out <= ALU_ADD_SUB;
                     alu_select_a_out <= ALU_SEL_PC;
                     imm_data_out <= u_type_imm_data;
                     rd_address_out <= rd_address;
+                    bypass_memory_out <= 1;
                 end
                 7'b1101111 : begin // JAL
                     alu_function_out <= ALU_ADD_SUB;
@@ -237,6 +260,7 @@ always @(posedge clk) begin
                     imm_data_out <= i_type_imm_data;
                     write_select_out <= WRITE_SEL_ALU;
                     rd_address_out <= rd_address;
+                    bypass_memory_out <= 1;
                     if (
                         (instr[14:12] == 3'b001 && instr[31:25] != 0)
                         || (instr[14:12] == 3'b101 && (instr[31] != 0 || instr[29:25] != 0))
@@ -252,6 +276,7 @@ always @(posedge clk) begin
                     alu_select_b_out <= ALU_SEL_REG;
                     write_select_out <= WRITE_SEL_ALU;
                     rd_address_out <= rd_address;
+                    bypass_memory_out <= 1;
                     if (instr[31:25] != 0 && (instr[31:25] != 7'b0100000 || (instr[14:12] != 0 && instr[14:12] != 3'b101))) begin
                         ecause_out <= 2;
                         exception_out <= 1;
@@ -303,6 +328,7 @@ always @(posedge clk) begin
                         end
                         3'b001: begin // CSRRW
                             rd_address_out <= rd_address;
+                            bypass_memory_out <= 1;
                             alu_select_a_out <= ALU_SEL_REG;
                             csr_read_out <= (rd_address != 0);
                             csr_write_out <= 1;
@@ -310,6 +336,7 @@ always @(posedge clk) begin
                         end
                         3'b010: begin // CSRRS
                             rd_address_out <= rd_address;
+                            bypass_memory_out <= 1;
                             alu_select_a_out <= ALU_SEL_REG;
                             alu_select_b_out <= ALU_SEL_CSR;
                             csr_read_out <= 1;
@@ -318,6 +345,7 @@ always @(posedge clk) begin
                         end
                         3'b011: begin // CSRRC
                             rd_address_out <= rd_address;
+                            bypass_memory_out <= 1;
                             alu_function_out <= ALU_AND_CLR;
                             alu_function_modifier_out <= 1;
                             alu_select_a_out <= ALU_SEL_REG;
@@ -328,6 +356,7 @@ always @(posedge clk) begin
                         end
                         3'b101: begin // CSRRWI
                             rd_address_out <= rd_address;
+                            bypass_memory_out <= 1;
                             imm_data_out <= csr_type_imm_data;
                             csr_read_out <= (rd_address != 0);
                             csr_write_out <= 1;
@@ -335,6 +364,7 @@ always @(posedge clk) begin
                         end
                         3'b110: begin // CSRRSI
                             rd_address_out <= rd_address;
+                            bypass_memory_out <= 1;
                             alu_select_b_out <= ALU_SEL_CSR;
                             imm_data_out <= csr_type_imm_data;
                             csr_read_out <= 1;
@@ -343,6 +373,7 @@ always @(posedge clk) begin
                         end
                         3'b111: begin // CSRRCI
                             rd_address_out <= rd_address;
+                            bypass_memory_out <= 1;
                             alu_function_out <= ALU_AND_CLR;
                             alu_function_modifier_out <= 1;
                             alu_select_b_out <= ALU_SEL_CSR;
