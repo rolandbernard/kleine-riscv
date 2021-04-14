@@ -98,16 +98,13 @@ bool loadFromElfFile(const char* filename, uint32_t* data, uint32_t start, uint3
             return false;
         }
         if (program_header.p_type == PT_LOAD) {
-            Elf_Data* elf_data = elf_getdata_rawchunk(elf, program_header.p_offset, program_header.p_filesz, ELF_T_BYTE);
+            Elf_Data* elf_data = elf_getdata_rawchunk(elf, program_header.p_offset, program_header.p_filesz, ELF_T_WORD);
             if (program_header.p_paddr < (start + length) && (program_header.p_paddr + program_header.p_filesz) > start) {
-                size_t copy_start = std::max(program_header.p_paddr - start, (size_t)0);
-                size_t to_copy = std::min(program_header.p_filesz, length - copy_start);
-                uint8_t* raw_data = (uint8_t*)elf_data->d_buf;
-                for (int i = 0; i < to_copy; i++) {
-                    if (i % 4 == 0) {
-                        data[i/4] = 0;
-                    }
-                    data[i/4] |= ((uint32_t)raw_data[i]) << (8*i);
+                size_t copy_start = std::max<size_t>(program_header.p_paddr, start);
+                size_t copy_end = std::min<size_t>(program_header.p_paddr + program_header.p_filesz, start + length);
+                uint32_t* raw_data = (uint32_t*)elf_data->d_buf;
+                for (size_t i = copy_start; i < copy_end; i += 4) {
+                    data[(i - start) / 4] |= raw_data[(i - program_header.p_paddr) / 4];
                 }
             }
         }

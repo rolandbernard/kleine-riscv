@@ -39,13 +39,13 @@ static void parseArguments(int argc, const char** argv, uint32_t* memory_size, i
                         }
                     }
                     if (argv[i][j] == 'G') {
-                        i++;
+                        j++;
                         number *= 1 << 30;
                     } else if (argv[i][j] == 'M') {
-                        i++;
+                        j++;
                         number *= 1 << 20;
                     } else if (argv[i][j] == 'K' || argv[i][j] == 'k') {
-                        i++;
+                        j++;
                         number *= 1 << 10;
                     }
                     if (argv[i][j] != 0) {
@@ -115,24 +115,23 @@ static void parseArguments(int argc, const char** argv, uint32_t* memory_size, i
                                 number *= 10;
                                 number += argv[i][j] - '0';
                             } else {
-                                std::cerr << "job count must be an integer" << std::endl;
                                 break;
                             }
                         }
                         if (argv[i][j] == 'G') {
-                            i++;
+                            j++;
                             number *= 1 << 30;
                         } else if (argv[i][j] == 'M') {
-                            i++;
+                            j++;
                             number *= 1 << 20;
                         } else if (argv[i][j] == 'K' || argv[i][j] == 'k') {
-                            i++;
+                            j++;
                             number *= 1 << 10;
                         }
                         if (argv[i][j] != 0) {
                             std::cerr << "memory size must be an size (e.g. 64M 128K 1G)" << std::endl;
                         }
-                        *cycle_limit = number;
+                        *memory_size = number;
                     } else if (argv[p][j] == 'c') {
                         i++;
                         int number = 0;
@@ -179,10 +178,12 @@ static void addHandlers(MagicMemory& memory, bool add_exit) {
         .start = 0x10000000,
         .length = 4,
         .handle_read = [](uint32_t addres) {
-            return getc(stdin);
+            return 0;
         },
         .handle_write = [](uint32_t address, uint32_t data, uint8_t strobe) {
-            putc(data, stdout);
+            if (strobe & 0b0001) {
+                std::cerr << (char)(data & 0xff);
+            }
         }
     };
     memory.addHandler(console);
