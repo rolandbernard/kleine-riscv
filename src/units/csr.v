@@ -2,6 +2,9 @@ module csr (
     input clk,
     input reset,
 
+    // from interupt controller
+    input meip,
+
     // from decode (read port)
     input [11:0] read_address,
     // to decode (read port)
@@ -32,23 +35,23 @@ module csr (
     output [31:0] mret_vector
 );
 
-// TODO: add mashine mode tests
-
 reg [63:0] cycle = 0;
 reg [63:0] instret = 0;
 reg pie = 0;
 reg ie = 0;
 reg meie;
-reg meip;
 reg msie;
 reg msip;
 reg mtie;
-reg mtip;
 reg [31:0] mtvec;
 reg [31:0] mscratch;
 reg [31:0] mecp;
 reg [3:0] mcause = 0;
 reg minterupt = 0;
+
+// This is a custom csr
+reg [63:0] mtimecmp;
+wire mtip = cycle >= mtimecmp;
 
 assign eip = ie && meie && meip;
 assign tip = ie && mtie && mtip;
@@ -172,6 +175,17 @@ always @(*) begin
             readable = 1;
             writeable = 1;
         end
+        // Custom CSRs
+        12'hbc0: begin // mtimecmp - This csr is not memory mapped as defined by the riscv spec
+            read_data = mtimecmp[31:0];
+            readable = 1;
+            writeable = 1;
+        end
+        12'hbc1: begin // mtimecmph
+            read_data = mtimecmp[63:32];
+            readable = 1;
+            writeable = 1;
+        end
         default: begin
             read_data = 0;
             readable = 0;
@@ -203,8 +217,6 @@ always @(posedge clk) begin
             end
             12'h344: begin // mip
                 msip <= write_data[3];
-                mtip <= write_data[7];
-                meip <= write_data[11];
             end
             12'h304: begin // mie
                 msie <= write_data[3];
@@ -235,6 +247,13 @@ always @(posedge clk) begin
             end
             12'hb82: begin // minstreth
                 instret[63:32] <= write_data;
+            end
+            // Custom CSRs
+            12'hbc0: begin // mtimecmp - This csr is not memory mapped as defined by the riscv spec
+                mtimecmp[31:0] <= write_data;
+            end
+            12'hbc1: begin // mtimecmph
+                mtimecmp[63:32] <= write_data;
             end
             default: begin
             end

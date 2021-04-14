@@ -2,6 +2,8 @@ module core (
     input clk,
     input reset,
 
+    input meip,
+
     // Memory interface
     output ext_valid,
     output ext_instruction,
@@ -15,6 +17,8 @@ module core (
 pipeline core_pipeline (
     .clk(clk),
     .reset(reset),
+
+    .meip(meip),
 
     .fetch_data(fetch_data),
     .mem_load_data(mem_load_data),

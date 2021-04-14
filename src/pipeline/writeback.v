@@ -56,9 +56,9 @@ wire to_execute = !exception_in && valid_in;
 
 assign traped = (sip || tip || eip || (exception_in && valid_in));
 assign ecp = wfi_in ? next_pc_in : pc_in;
-assign wfi = wfi_in;
+assign wfi = to_execute && wfi_in;
 
-assign retired = to_execute && !traped;
+assign retired = to_execute && !traped && !wfi;
 
 assign mret = mret_in && to_execute;
 

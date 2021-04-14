@@ -1,6 +1,9 @@
 module pipeline (
     input clk,
     input reset,
+
+    // from interupt controller
+    input meip,
     
     // from busio to fetch
     input [31:0] fetch_data,
@@ -24,6 +27,8 @@ module pipeline (
 csr pipeline_csr (
     .clk(clk),
     .reset(reset),
+
+    .meip(meip),
 
     // from decode (read port)
     .read_address(decode_to_csr_read_address),
