@@ -115,26 +115,30 @@ hazard pipeline_hazard (
     .reset(reset),
 
     // from decode
-    .rs1_address_decode(fetch_to_decode_valid ? decode_to_regfile_rs1_address : 0),
-    .rs2_address_decode(fetch_to_decode_valid ? decode_to_regfile_rs2_address : 0),
+    .valid_decode(fetch_to_decode_valid),
+    .rs1_address_decode(decode_to_regfile_rs1_address),
+    .rs2_address_decode(decode_to_regfile_rs2_address),
     .uses_rs1(decode_to_hazaed_uses_rs1),
     .uses_rs2(decode_to_hazaed_uses_rs2),
     .uses_csr(decode_to_hazaed_uses_csr),
 
     // from execute
-    .rd_address_execute(decode_to_execute_valid ? decode_to_execute_rd_address : 0),
-    .csr_write_execute(decode_to_execute_valid ? decode_to_execute_csr_write : 0),
+    .valid_execute(decode_to_execute_valid),
+    .rd_address_execute(decode_to_execute_rd_address),
+    .csr_write_execute(decode_to_execute_csr_write),
         
     // from memory
-    .rd_address_memory(execute_to_memory_valid ? execute_to_memory_rd_address : 0),
-    .csr_write_memory(execute_to_memory_valid ? execute_to_memory_csr_write : 0),
+    .valid_memory(execute_to_memory_valid),
+    .rd_address_memory(execute_to_memory_rd_address),
+    .csr_write_memory(execute_to_memory_csr_write),
     .branch_taken(global_branch_taken),
-    .mret_memory(execute_to_memory_valid ? execute_to_memory_mret : 0),
+    .mret_memory(execute_to_memory_mret),
     .load_store(mem_load || mem_store),
     .bypass_memory(memory_to_regfile_bypass_address != 0),
 
     // from writeback
-    .csr_write_writeback(memory_to_writeback_valid ? writeback_to_csr_write_enable : 0),
+    .valid_writeback(memory_to_writeback_valid),
+    .csr_write_writeback(writeback_to_csr_write_enable),
     .mret_writeback(global_mret),
     .traped(global_traped),
     .wfi(global_wfi),

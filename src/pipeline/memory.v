@@ -69,7 +69,7 @@ module memory (
 
 wire to_execute = !exception_in && valid_in;
 
-assign bypass_address = (to_execute && bypass_memory_in) ? rd_address_in : 0;
+assign bypass_address = (valid_in && bypass_memory_in) ? rd_address_in : 5'h0;
 assign bypass_data = write_select_in[0] ? csr_data_in : alu_data_in;
 
 wire valid_branch_address = (alu_data_in[1:0] == 0);
@@ -84,7 +84,7 @@ always @(*) begin
     endcase
 end
 
-assign branch_taken = to_execute && valid_branch_address && branch_taken_in;
+assign branch_taken = valid_in && valid_branch_address && branch_taken_in;
 assign branch_address = alu_data_in;
 
 assign mem_load = to_execute && valid_mem_address && load_in;
@@ -95,31 +95,28 @@ assign mem_address = alu_data_in;
 assign mem_store_data = rs2_data_in;
 
 always @(posedge clk) begin
+    valid_out <= valid_in && !invalidate;
     if (!stall) begin
-        valid_out <= 0;
-        if (valid_in && !invalidate) begin
-            pc_out <= pc_in;
-            next_pc_out <= next_pc_in;
-            alu_data_out <= alu_data_in;
-            csr_data_out <= csr_data_in;
-            load_data_out <= mem_load_data;
-            write_select_out <= write_select_in;
-            rd_address_out <= rd_address_in;
-            csr_address_out <= csr_address_in;
-            csr_write_out <= csr_write_in;
-            mret_out <= mret_in;
-            wfi_out <= wfi_in;
-            if (!exception_in && branch_taken_in && !valid_branch_address) begin
-                ecause_out <= 0;
-                exception_out <= 1;
-            end else if (!exception_in && (load_in || store_in) && !valid_mem_address) begin
-                ecause_out <= load_in ? 4 : 6;
-                exception_out <= 1;
-            end else begin
-                ecause_out <= ecause_in;
-                exception_out <= exception_in;
-            end
-            valid_out <= 1;
+        pc_out <= pc_in;
+        next_pc_out <= next_pc_in;
+        alu_data_out <= alu_data_in;
+        csr_data_out <= csr_data_in;
+        load_data_out <= mem_load_data;
+        write_select_out <= write_select_in;
+        rd_address_out <= rd_address_in;
+        csr_address_out <= csr_address_in;
+        csr_write_out <= csr_write_in;
+        mret_out <= mret_in;
+        wfi_out <= wfi_in;
+        if (!exception_in && branch_taken_in && !valid_branch_address) begin
+            ecause_out <= 0;
+            exception_out <= 1;
+        end else if (!exception_in && (load_in || store_in) && !valid_mem_address) begin
+            ecause_out <= load_in ? 4'h4 : 4'h6;
+            exception_out <= 1;
+        end else begin
+            ecause_out <= ecause_in;
+            exception_out <= exception_in;
         end
     end
 end

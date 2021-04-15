@@ -43,6 +43,7 @@ reg meie;
 reg msie;
 reg msip;
 reg mtie;
+reg mtip;
 reg [31:0] mtvec;
 reg [31:0] mscratch;
 reg [31:0] mecp;
@@ -51,7 +52,6 @@ reg minterupt = 0;
 
 // This is a custom csr
 reg [63:0] mtimecmp;
-wire mtip = cycle >= mtimecmp;
 
 assign eip = ie && meie && meip;
 assign tip = ie && mtie && mtip;
@@ -267,6 +267,7 @@ always @(posedge clk) begin
         cycle <= 0;
         instret <= 0;
     end
+    mtip <= cycle >= mtimecmp;
 end
 
 endmodule

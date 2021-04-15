@@ -10,7 +10,7 @@ module core (
     input ext_ready,
     output [31:0] ext_address,
     output [31:0] ext_write_data,
-    output reg [3:0] ext_write_strobe,
+    output [3:0] ext_write_strobe,
     input [31:0] ext_read_data
 );
 

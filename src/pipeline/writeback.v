@@ -52,15 +52,15 @@ localparam WRITE_SEL_CSR     = 2'b01;
 localparam WRITE_SEL_LOAD    = 2'b10;
 localparam WRITE_SEL_NEXT_PC = 2'b11;
 
-wire to_execute = !exception_in && valid_in;
+wire exception = exception_in && valid_in;
 
-assign traped = (sip || tip || eip || (exception_in && valid_in));
+assign traped = (sip || tip || eip || exception);
 assign ecp = wfi_in ? next_pc_in : pc_in;
-assign wfi = to_execute && wfi_in;
+assign wfi = valid_in && wfi_in;
 
-assign retired = to_execute && !traped && !wfi;
+assign retired = valid_in && !traped && !wfi;
 
-assign mret = mret_in && to_execute;
+assign mret = valid_in && mret_in;
 
 always @(*) begin
     if (eip) begin
@@ -81,7 +81,7 @@ always @(*) begin
     end
 end
 
-assign rd_address = (!to_execute || traped) ? 0 : rd_address_in;
+assign rd_address = (!valid_in || traped) ? 5'h0 : rd_address_in;
 
 always @(*) begin
     case (write_select_in)
@@ -92,7 +92,7 @@ always @(*) begin
     endcase
 end
 
-assign csr_write = to_execute && !traped && csr_write_in;
+assign csr_write = valid_in && !traped && csr_write_in;
 assign csr_address = csr_address_in;
 assign csr_data = alu_data_in;
 

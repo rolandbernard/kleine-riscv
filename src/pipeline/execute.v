@@ -110,34 +110,31 @@ alu ex_alu (
 wire csr_exception = ((csr_read_in && !csr_readable_in) || (csr_write_in && !csr_writeable_in));
 
 always @(posedge clk) begin
+    valid_out <= valid_in && !invalidate;
     if (!stall) begin
-        valid_out <= 0;
-        if (valid_in && !invalidate) begin
-            pc_out <= pc_in;
-            next_pc_out <= next_pc_in;
-            alu_data_out <= alu_output;
-            rs2_data_out <= rs2_data_in;
-            csr_data_out <= csr_data_in;
-            branch_taken_out <= branch_in && (jump_in || cmp_output);
-            load_out <= load_in;
-            store_out <= store_in;
-            load_store_size_out <= load_store_size_in;
-            load_signed_out <= load_signed_in;
-            write_select_out <= write_select_in;
-            rd_address_out <= rd_address_in;
-            bypass_memory_out <= bypass_memory_in;
-            csr_address_out <= csr_address_in;
-            csr_write_out <= csr_write_in;
-            mret_out <= mret_in;
-            wfi_out <= wfi_in;
-            if (!exception_in && csr_exception) begin
-                ecause_out <= 2;
-                exception_out <= 1;
-            end else begin
-                ecause_out <= ecause_in;
-                exception_out <= exception_in;
-            end
-            valid_out <= 1;
+        pc_out <= pc_in;
+        next_pc_out <= next_pc_in;
+        alu_data_out <= alu_output;
+        rs2_data_out <= rs2_data_in;
+        csr_data_out <= csr_data_in;
+        branch_taken_out <= branch_in && (jump_in || cmp_output);
+        load_out <= load_in;
+        store_out <= store_in;
+        load_store_size_out <= load_store_size_in;
+        load_signed_out <= load_signed_in;
+        write_select_out <= write_select_in;
+        rd_address_out <= rd_address_in;
+        bypass_memory_out <= bypass_memory_in;
+        csr_address_out <= csr_address_in;
+        csr_write_out <= csr_write_in;
+        mret_out <= mret_in;
+        wfi_out <= wfi_in;
+        if (!exception_in && csr_exception) begin
+            ecause_out <= 2;
+            exception_out <= 1;
+        end else begin
+            ecause_out <= ecause_in;
+            exception_out <= exception_in;
         end
     end
 end

@@ -9,10 +9,11 @@ SIM_DIR   := sim
 # ==
 
 # == Test files
-UNIT_SRC   := $(shell find $(UNITS_DIR) -type f -name '*.cpp')
-UNIT_TESTS := $(patsubst $(UNITS_DIR)/%.cpp, $(BUILD_DIR)/V%, $(UNIT_SRC))
-ISA_SRC    := $(shell find $(ISA_DIR) -type f -name '*.S')
-ISA_TESTS  := $(patsubst $(ISA_DIR)/%.S, $(ISA_DIR)/build/%, $(ISA_SRC))
+VERILOG_SRC := $(shell find $(SRC_DIR) -type f -name '*.v')
+UNIT_SRC    := $(shell find $(UNITS_DIR) -type f -name '*.cpp')
+UNIT_TESTS  := $(patsubst $(UNITS_DIR)/%.cpp, $(BUILD_DIR)/V%, $(UNIT_SRC))
+ISA_SRC     := $(shell find $(ISA_DIR) -type f -name '*.S')
+ISA_TESTS   := $(patsubst $(ISA_DIR)/%.S, $(ISA_DIR)/build/%, $(ISA_SRC))
 # ==
 
 # == Simulator files
@@ -41,9 +42,9 @@ $(BUILD_DIR)/V%: $(SRC_DIR)/units/%.v $(UNITS_DIR)/%.cpp | $$(dir $$@)
 	@echo Building $@
 	$(VERILATOR) $(VERIFLAGS) --cc --exe --build $^
 
-$(BUILD_DIR)/Vcore: $(SRC_DIR)/core.v $(SIM_SRC) | $$(dir $$@)
+$(BUILD_DIR)/Vcore: $(VERILOG_SRC) $(SIM_SRC) | $$(dir $$@)
 	@echo Building $@
-	$(VERILATOR) $(VERIFLAGS) --cc --exe --build -LDFLAGS -lelf $^
+	$(VERILATOR) $(VERIFLAGS) --cc --exe --build -LDFLAGS -lelf $(SRC_DIR)/core.v $(SIM_SRC)
 
 $(ISA_DIR)/build: $(ISA_SRC)
 	$(MAKE) -C $(ISA_DIR)
