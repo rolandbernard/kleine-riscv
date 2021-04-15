@@ -7,10 +7,9 @@ This is only the RISC-V core and does not include any other peripherals.
 
 * The Verilog source of the core can be found inside the `src` directory. The top module is the `core` module inside `src/core.v`.
 * In the `sim` directory you find a small simulator that when compiled using Verilator is used for testing.
-* Inside the `tests/units` directory are 3 tests for testing the `alu`, `cmp` and `regfile` modules. These tests are no longer really necessary and were only used in the beginning to verify these units on their own. (This is my first Verilog project and these tests verified my first modules.)
-* Inside the `tests/isa` directory are the main tests testing the functionality of the core. Most of them are modified versions of the tests in [riscv-tests](https://github.com/riscv/riscv-tests).
-  * The tests inside `tests/isa/rv32ui` test the unprivileged ISA.
-  * The tests inside `tests/isa/rv32mi` test the privileged ISA.
+* Inside the `tests` directory are the main tests testing the functionality of the core. Most of them are modified versions of the tests in [riscv-tests](https://github.com/riscv/riscv-tests).
+  * The tests inside `tests/rv32ui` test the unprivileged ISA.
+  * The tests inside `tests/rv32mi` test the privileged ISA.
 * The makefile contains the `test` and `sim` targets. If you want to run all the test, run `make` or `make test`. If you only want to build the simulator run `make sim`.
 
 ## Architecture
