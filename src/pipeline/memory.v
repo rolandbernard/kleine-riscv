@@ -8,7 +8,9 @@ module memory (
     input [31:0] alu_addition_in,
     input [31:0] rs2_data_in,
     input [31:0] csr_data_in,
-    input branch_taken_in,
+    input branch_in,
+    input jump_in,
+    input cmp_output_in,
     input load_in,
     input store_in,
     input [1:0] load_store_size_in,
@@ -85,7 +87,8 @@ always @(*) begin
     endcase
 end
 
-assign branch_taken = valid_in && valid_branch_address && branch_taken_in;
+wire should_branch = branch_in && (jump_in || cmp_output_in);
+assign branch_taken = valid_in && valid_branch_address && should_branch;
 assign branch_address = alu_addition_in;
 
 assign mem_load = to_execute && valid_mem_address && load_in;
@@ -109,7 +112,7 @@ always @(posedge clk) begin
         csr_write_out <= csr_write_in;
         mret_out <= mret_in;
         wfi_out <= wfi_in;
-        if (!exception_in && branch_taken_in && !valid_branch_address) begin
+        if (!exception_in && should_branch && !valid_branch_address) begin
             ecause_out <= 0;
             exception_out <= 1;
         end else if (!exception_in && (load_in || store_in) && !valid_mem_address) begin
