@@ -49,7 +49,8 @@ module execute (
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
     // to memory (control MEM)
-    output reg [31:0] alu_data_out,
+    output [31:0] alu_data_out,
+    output [31:0] alu_addition_out,
     output reg [31:0] rs2_data_out,
     output reg [31:0] csr_data_out,
     output reg branch_taken_out,
@@ -105,13 +106,14 @@ always @(*) begin
     endcase
 end
 
-wire [31:0] alu_output;
 alu ex_alu (
+    .clk(clk),
     .input_a(alu_input_a),
     .input_b(alu_input_b),
     .function_select(alu_function_in),
     .function_modifier(alu_function_modifier_in),
-    .result(alu_output)
+    .add_result(alu_addition_out),
+    .result(alu_data_out)
 );
 
 wire csr_exception = ((csr_read_in && !csr_readable_in) || (csr_write_in && !csr_writeable_in));
@@ -121,7 +123,6 @@ always @(posedge clk) begin
     if (!stall) begin
         pc_out <= pc_in;
         next_pc_out <= next_pc_in;
-        alu_data_out <= alu_output;
         rs2_data_out <= acctual_rs2;
         csr_data_out <= csr_data_in;
         branch_taken_out <= branch_in && (jump_in || cmp_output);

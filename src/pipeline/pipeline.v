@@ -384,6 +384,7 @@ execute pipeline_execute (
     .next_pc_out(execute_to_memory_next_pc),
     // to memory (control MEM)
     .alu_data_out(execute_to_memory_alu_data),
+    .alu_addition_out(execute_to_memory_alu_addition),
     .rs2_data_out(execute_to_memory_rs2_data),
     .csr_data_out(execute_to_memory_csr_data),
     .branch_taken_out(execute_to_memory_branch_taken),
@@ -408,6 +409,7 @@ execute pipeline_execute (
 wire [31:0] execute_to_memory_pc;
 wire [31:0] execute_to_memory_next_pc;
 wire [31:0] execute_to_memory_alu_data;
+wire [31:0] execute_to_memory_alu_addition;
 wire [31:0] execute_to_memory_rs2_data;
 wire [31:0] execute_to_memory_csr_data;
 wire execute_to_memory_branch_taken;
@@ -433,6 +435,7 @@ memory pipeline_memory (
     .next_pc_in(execute_to_memory_next_pc),
     // from execute (control MEM)
     .alu_data_in(execute_to_memory_alu_data),
+    .alu_addition_in(execute_to_memory_alu_addition),
     .rs2_data_in(execute_to_memory_rs2_data),
     .csr_data_in(execute_to_memory_csr_data),
     .branch_taken_in(execute_to_memory_branch_taken),

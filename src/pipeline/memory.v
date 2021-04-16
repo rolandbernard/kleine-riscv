@@ -5,6 +5,7 @@ module memory (
     input [31:0] next_pc_in,
     // from execute (control MEM)
     input [31:0] alu_data_in,
+    input [31:0] alu_addition_in,
     input [31:0] rs2_data_in,
     input [31:0] csr_data_in,
     input branch_taken_in,
@@ -72,26 +73,26 @@ wire to_execute = !exception_in && valid_in;
 assign bypass_address = (valid_in && bypass_memory_in) ? rd_address_in : 5'h0;
 assign bypass_data = write_select_in[0] ? csr_data_in : alu_data_in;
 
-wire valid_branch_address = (alu_data_in[1:0] == 0);
+wire valid_branch_address = (alu_addition_in[1:0] == 0);
 reg valid_mem_address;
 
 always @(*) begin
     case (load_store_size_in)
         2'b00: valid_mem_address = 1;
-        2'b01: valid_mem_address = (alu_data_in[0] == 0);
-        2'b10: valid_mem_address = (alu_data_in[1:0] == 0);
+        2'b01: valid_mem_address = (alu_addition_in[0] == 0);
+        2'b10: valid_mem_address = (alu_addition_in[1:0] == 0);
         2'b11: valid_mem_address = 0;
     endcase
 end
 
 assign branch_taken = valid_in && valid_branch_address && branch_taken_in;
-assign branch_address = alu_data_in;
+assign branch_address = alu_addition_in;
 
 assign mem_load = to_execute && valid_mem_address && load_in;
 assign mem_store = to_execute && valid_mem_address && store_in;
 assign mem_size = load_store_size_in;
 assign mem_signed = load_signed_in;
-assign mem_address = alu_data_in;
+assign mem_address = alu_addition_in;
 assign mem_store_data = rs2_data_in;
 
 always @(posedge clk) begin
