@@ -52,7 +52,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-    valid_out <= !invalidate;
+    valid_out <= (stall ? valid_out : 1) && !invalidate;
     if (!stall) begin
         pc_out <= pc;
         next_pc_out <= next_pc;

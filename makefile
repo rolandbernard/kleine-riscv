@@ -53,5 +53,5 @@ $(TEST_DIR)/build/%: $(TEST_DIR)/build $(TEST_DIR)/%.S
 
 RUNTEST.$(TEST_DIR)/build/%: $(TEST_DIR)/build/% $(BUILD_DIR)/Vcore
 	@echo "Running test $(notdir $<)"
-	$(BUILD_DIR)/Vcore -c 10000 -e $<
+	$(BUILD_DIR)/Vcore -c 10000 -e -l 5 $<
 

@@ -29,7 +29,7 @@ module memory (
     input stall,
     input invalidate,
 
-    // to writeback
+    // to decode
     output [4:0] bypass_address,
     output [31:0] bypass_data,
 
@@ -95,7 +95,7 @@ assign mem_address = alu_data_in;
 assign mem_store_data = rs2_data_in;
 
 always @(posedge clk) begin
-    valid_out <= valid_in && !invalidate;
+    valid_out <= (stall ? valid_out : valid_in) && !invalidate;
     if (!stall) begin
         pc_out <= pc_in;
         next_pc_out <= next_pc_in;
