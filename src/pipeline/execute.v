@@ -7,6 +7,10 @@ module execute (
     // from decode (control EX)
     input [31:0] rs1_data_in,
     input [31:0] rs2_data_in,
+    input [31:0] rs1_bypass_in,
+    input [31:0] rs2_bypass_in,
+    input rs1_bypassed_in,
+    input rs2_bypassed_in,
     input [31:0] csr_data_in,
     input [31:0] imm_data_in,
     input [2:0] alu_function_in,
@@ -45,7 +49,8 @@ module execute (
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
     // to memory (control MEM)
-    output reg [31:0] alu_data_out,
+    output [31:0] alu_data_out,
+    output [31:0] alu_addition_out,
     output reg [31:0] rs2_data_out,
     output reg [31:0] csr_data_out,
     output reg branch_taken_out,
@@ -72,10 +77,13 @@ localparam ALU_SEL_IMM = 2'b01;
 localparam ALU_SEL_PC  = 2'b10;
 localparam ALU_SEL_CSR = 2'b11;
 
+wire [31:0] acctual_rs1 = rs1_bypassed_in ? rs1_bypass_in : rs1_data_in;
+wire [31:0] acctual_rs2 = rs2_bypassed_in ? rs2_bypass_in : rs2_data_in;
+
 wire cmp_output;
 cmp ex_cmp (
-    .input_a(rs1_data_in),
-    .input_b(rs2_data_in),
+    .input_a(acctual_rs1),
+    .input_b(acctual_rs2),
     .function_select(cmp_function_in),
     .result(cmp_output)
 );
@@ -85,37 +93,37 @@ reg [31:0] alu_input_b;
 
 always @(*) begin
     case (alu_select_a_in)
-        ALU_SEL_REG : alu_input_a = rs1_data_in;
+        ALU_SEL_REG : alu_input_a = acctual_rs1;
         ALU_SEL_IMM : alu_input_a = imm_data_in;
         ALU_SEL_PC  : alu_input_a = pc_in;
         ALU_SEL_CSR : alu_input_a = csr_data_in;
     endcase
     case (alu_select_b_in)
-        ALU_SEL_REG : alu_input_b = rs2_data_in;
+        ALU_SEL_REG : alu_input_b = acctual_rs2;
         ALU_SEL_IMM : alu_input_b = imm_data_in;
         ALU_SEL_PC  : alu_input_b = pc_in;
         ALU_SEL_CSR : alu_input_b = csr_data_in;
     endcase
 end
 
-wire [31:0] alu_output;
 alu ex_alu (
+    .clk(clk),
     .input_a(alu_input_a),
     .input_b(alu_input_b),
     .function_select(alu_function_in),
     .function_modifier(alu_function_modifier_in),
-    .result(alu_output)
+    .add_result(alu_addition_out),
+    .result(alu_data_out)
 );
 
 wire csr_exception = ((csr_read_in && !csr_readable_in) || (csr_write_in && !csr_writeable_in));
 
 always @(posedge clk) begin
-    valid_out <= valid_in && !invalidate;
+    valid_out <= (stall ? valid_out : valid_in) && !invalidate;
     if (!stall) begin
         pc_out <= pc_in;
         next_pc_out <= next_pc_in;
-        alu_data_out <= alu_output;
-        rs2_data_out <= rs2_data_in;
+        rs2_data_out <= acctual_rs2;
         csr_data_out <= csr_data_in;
         branch_taken_out <= branch_in && (jump_in || cmp_output);
         load_out <= load_in;

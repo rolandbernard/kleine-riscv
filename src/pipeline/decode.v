@@ -29,12 +29,24 @@ module decode (
     input csr_readable,
     input csr_writeable,
 
+    // from memory
+    input [4:0] bypass_memory_address,
+    input [31:0] bypass_memory_data,
+
+    // from writeback
+    input [4:0] bypass_writeback_address,
+    input [31:0] bypass_writeback_data,
+
     // to execute
     output reg [31:0] pc_out,
     output reg [31:0] next_pc_out,
     // to execute (control EX)
     output reg [31:0] rs1_data_out,
     output reg [31:0] rs2_data_out,
+    output reg [31:0] rs1_bypass_out,
+    output reg [31:0] rs2_bypass_out,
+    output reg rs1_bypassed_out,
+    output reg rs2_bypassed_out,
     output reg [31:0] csr_data_out,
     output reg [31:0] imm_data_out,
     output reg [2:0] alu_function_out,
@@ -152,7 +164,7 @@ wire [31:0] b_type_imm_data = {{20{instr[31]}}, instr[7], instr[30:25], instr[11
 wire [31:0] csr_type_imm_data = {27'b0, rs1_address};
 
 always @(posedge clk) begin
-    valid_out <= valid_in && !invalidate;
+    valid_out <= (stall ? valid_out : valid_in) && !invalidate;
     if (!stall) begin
         pc_out <= pc_in;
         next_pc_out <= next_pc_in;
@@ -390,6 +402,44 @@ always @(posedge clk) begin
                 exception_out <= 1;
             end
         endcase
+
+        case (rs1_address)
+            0: begin
+                rs1_bypassed_out <= 1;
+                rs1_bypass_out <= 0;
+            end
+            bypass_memory_address: begin
+                rs1_bypassed_out <= 1;
+                rs1_bypass_out <= bypass_memory_data;
+            end
+            bypass_writeback_address: begin
+                rs1_bypassed_out <= 1;
+                rs1_bypass_out <= bypass_writeback_data;
+            end
+            default: begin
+                rs1_bypassed_out <= 0;
+                rs1_bypass_out <= 0;
+            end
+        endcase 
+
+        case (rs2_address)
+            0: begin
+                rs2_bypassed_out <= 1;
+                rs2_bypass_out <= 0;
+            end
+            bypass_memory_address: begin
+                rs2_bypassed_out <= 1;
+                rs2_bypass_out <= bypass_memory_data;
+            end
+            bypass_writeback_address: begin
+                rs2_bypassed_out <= 1;
+                rs2_bypass_out <= bypass_writeback_data;
+            end
+            default: begin
+                rs2_bypassed_out <= 0;
+                rs2_bypass_out <= 0;
+            end
+        endcase 
     end
 end
 

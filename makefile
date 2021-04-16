@@ -3,17 +3,13 @@
 SRC_DIR   := src
 BUILD_DIR := build
 TEST_DIR  := tests
-ISA_DIR   := $(TEST_DIR)/isa
-UNITS_DIR := $(TEST_DIR)/units
 SIM_DIR   := sim
 # ==
 
 # == Test files
 VERILOG_SRC := $(shell find $(SRC_DIR) -type f -name '*.v')
-UNIT_SRC    := $(shell find $(UNITS_DIR) -type f -name '*.cpp')
-UNIT_TESTS  := $(patsubst $(UNITS_DIR)/%.cpp, $(BUILD_DIR)/V%, $(UNIT_SRC))
-ISA_SRC     := $(shell find $(ISA_DIR) -type f -name '*.S')
-ISA_TESTS   := $(patsubst $(ISA_DIR)/%.S, $(ISA_DIR)/build/%, $(ISA_SRC))
+TEST_SRC    := $(shell find $(TEST_DIR) -type f -name '*.S')
+TEST_BINS   := $(patsubst $(TEST_DIR)/%.S, $(TEST_DIR)/build/%, $(TEST_SRC))
 # ==
 
 # == Simulator files
@@ -21,7 +17,7 @@ SIM_SRC := $(shell find $(SIM_DIR) -type f -name '*.cpp')
 # ==
 
 # == Runing goals
-RUNTESTS  := $(addprefix RUNTEST.,$(UNIT_TESTS) $(ISA_TESTS))
+RUNTESTS  := $(addprefix RUNTEST.,$(TEST_BINS))
 # ==
 
 # == Verilator config
@@ -32,7 +28,7 @@ VERIFLAGS := $(addprefix -I,$(shell find $(SRC_DIR) -type d)) -Wall -Mdir $(BUIL
 .SILENT:
 .SECONDARY:
 .SECONDEXPANSION:
-.PHONY: test sim build-tests RUNTEST.$(BUILD_DIR)/% RUNTEST.$(ISA_DIR)/build/% $(ISA_DIR)/build
+.PHONY: test sim build-tests RUNTEST.$(TEST_DIR)/build/% $(TEST_DIR)/build
 
 test: $(RUNTESTS)
 
@@ -46,17 +42,16 @@ $(BUILD_DIR)/Vcore: $(VERILOG_SRC) $(SIM_SRC) | $$(dir $$@)
 	@echo Building $@
 	$(VERILATOR) $(VERIFLAGS) --cc --exe --build -LDFLAGS -lelf $(SRC_DIR)/core.v $(SIM_SRC)
 
-$(ISA_DIR)/build: $(ISA_SRC)
-	$(MAKE) -C $(ISA_DIR)
+$(TEST_DIR)/build: $(TEST_SRC)
+	$(MAKE) -C $(TEST_DIR)
+
+$(TEST_DIR)/build/%: $(TEST_DIR)/build $(TEST_DIR)/%.S
+	@true
 
 %/:
 	mkdir -p $@
 
-RUNTEST.$(BUILD_DIR)/%: $(BUILD_DIR)/%
+RUNTEST.$(TEST_DIR)/build/%: $(TEST_DIR)/build/% $(BUILD_DIR)/Vcore
 	@echo "Running test $(notdir $<)"
-	$<
-
-RUNTEST.$(ISA_DIR)/build/%: $(ISA_DIR)/build/% $(BUILD_DIR)/Vcore $(ISA_DIR)/build
-	@echo "Running test $(notdir $<)"
-	$(BUILD_DIR)/Vcore -c 10000 -e $<
+	$(BUILD_DIR)/Vcore -c 10000 -e -l 5 $<
 

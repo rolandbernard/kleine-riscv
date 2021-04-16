@@ -93,11 +93,7 @@ regfile pipeline_registers (
 
     // from writeback (write port)
     .rd_address(writeback_to_regfile_rd_address),
-    .rd_data(writeback_to_regfile_rd_data),
-
-    // from memory (bypass)
-    .bypass_address(memory_to_regfile_bypass_address),
-    .bypass_data(memory_to_regfile_bypass_data)
+    .rd_data(writeback_to_regfile_rd_data)
 );
 
 wire [4:0] decode_to_regfile_rs1_address;
@@ -107,9 +103,6 @@ wire [31:0] regfile_to_decode_rs2_data;
 
 wire [4:0] writeback_to_regfile_rd_address;
 wire [31:0] writeback_to_regfile_rd_data;
-
-wire [4:0] memory_to_regfile_bypass_address;
-wire [31:0] memory_to_regfile_bypass_data;
 
 hazard pipeline_hazard (
     .reset(reset),
@@ -134,7 +127,7 @@ hazard pipeline_hazard (
     .branch_taken(global_branch_taken),
     .mret_memory(execute_to_memory_mret),
     .load_store(mem_load || mem_store),
-    .bypass_memory(memory_to_regfile_bypass_address != 0),
+    .bypass_memory(memory_to_decode_bypass_address != 0),
 
     // from writeback
     .valid_writeback(memory_to_writeback_valid),
@@ -252,12 +245,24 @@ decode pipeline_decode (
     .csr_readable(csr_to_decode_readable),
     .csr_writeable(csr_to_decode_writable),
 
+    // from memory
+    .bypass_memory_address(memory_to_decode_bypass_address),
+    .bypass_memory_data(memory_to_decode_bypass_data),
+
+    // from writeback
+    .bypass_writeback_address(writeback_to_regfile_rd_address),
+    .bypass_writeback_data(writeback_to_regfile_rd_data),
+
     // to execute
     .pc_out(decode_to_execute_pc),
     .next_pc_out(decode_to_execute_next_pc),
     // to execute (control EX)
     .rs1_data_out(decode_to_execute_rs1_data),
     .rs2_data_out(decode_to_execute_rs2_data),
+    .rs1_bypass_out(decode_to_execute_rs1_bypass),
+    .rs2_bypass_out(decode_to_execute_rs2_bypass),
+    .rs1_bypassed_out(decode_to_execute_rs1_bypassed),
+    .rs2_bypassed_out(decode_to_execute_rs2_bypassed),
     .csr_data_out(decode_to_execute_csr_data),
     .imm_data_out(decode_to_execute_imm_data),
     .alu_function_out(decode_to_execute_alu_function),
@@ -289,10 +294,17 @@ decode pipeline_decode (
     .exception_out(decode_to_execute_exception)
 );
 
+wire [4:0] memory_to_decode_bypass_address;
+wire [31:0] memory_to_decode_bypass_data;
+
 wire [31:0] decode_to_execute_pc;
 wire [31:0] decode_to_execute_next_pc;
 wire [31:0] decode_to_execute_rs1_data;
 wire [31:0] decode_to_execute_rs2_data;
+wire [31:0] decode_to_execute_rs1_bypass;
+wire [31:0] decode_to_execute_rs2_bypass;
+wire decode_to_execute_rs1_bypassed;
+wire decode_to_execute_rs2_bypassed;
 wire [31:0] decode_to_execute_csr_data;
 wire [31:0] decode_to_execute_imm_data;
 wire [2:0] decode_to_execute_alu_function;
@@ -329,6 +341,10 @@ execute pipeline_execute (
     // from decode (control EX)
     .rs1_data_in(decode_to_execute_rs1_data),
     .rs2_data_in(decode_to_execute_rs2_data),
+    .rs1_bypass_in(decode_to_execute_rs1_bypass),
+    .rs2_bypass_in(decode_to_execute_rs2_bypass),
+    .rs1_bypassed_in(decode_to_execute_rs1_bypassed),
+    .rs2_bypassed_in(decode_to_execute_rs2_bypassed),
     .csr_data_in(decode_to_execute_csr_data),
     .imm_data_in(decode_to_execute_imm_data),
     .alu_function_in(decode_to_execute_alu_function),
@@ -368,6 +384,7 @@ execute pipeline_execute (
     .next_pc_out(execute_to_memory_next_pc),
     // to memory (control MEM)
     .alu_data_out(execute_to_memory_alu_data),
+    .alu_addition_out(execute_to_memory_alu_addition),
     .rs2_data_out(execute_to_memory_rs2_data),
     .csr_data_out(execute_to_memory_csr_data),
     .branch_taken_out(execute_to_memory_branch_taken),
@@ -392,6 +409,7 @@ execute pipeline_execute (
 wire [31:0] execute_to_memory_pc;
 wire [31:0] execute_to_memory_next_pc;
 wire [31:0] execute_to_memory_alu_data;
+wire [31:0] execute_to_memory_alu_addition;
 wire [31:0] execute_to_memory_rs2_data;
 wire [31:0] execute_to_memory_csr_data;
 wire execute_to_memory_branch_taken;
@@ -417,6 +435,7 @@ memory pipeline_memory (
     .next_pc_in(execute_to_memory_next_pc),
     // from execute (control MEM)
     .alu_data_in(execute_to_memory_alu_data),
+    .alu_addition_in(execute_to_memory_alu_addition),
     .rs2_data_in(execute_to_memory_rs2_data),
     .csr_data_in(execute_to_memory_csr_data),
     .branch_taken_in(execute_to_memory_branch_taken),
@@ -441,9 +460,9 @@ memory pipeline_memory (
     .stall(hazard_to_memory_stall),
     .invalidate(hazard_to_memory_invalidate),
 
-    // to register (bypass)
-    .bypass_address(memory_to_regfile_bypass_address),
-    .bypass_data(memory_to_regfile_bypass_data),
+    // to decode
+    .bypass_address(memory_to_decode_bypass_address),
+    .bypass_data(memory_to_decode_bypass_data),
 
     // to busio
     .mem_address(mem_address),
