@@ -9,7 +9,7 @@ int recursive(int n) {
     }
 }
 
-void main() {
+void test() {
     ASSERT(2, recursive(15) == 610);
 }
 

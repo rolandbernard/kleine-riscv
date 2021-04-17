@@ -9,7 +9,7 @@ long long iterative(int n) {
     return r;
 }
 
-void main() {
+void test() {
     ASSERT(2, iterative(16) == 20922789888000LL);
 }
 

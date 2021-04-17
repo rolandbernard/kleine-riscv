@@ -3,13 +3,13 @@
 
 #define ASSERT(NUM, COND) { if (!(COND)) { leave(NUM); } }
 
-void main();
+void test();
 void leave(int code);
 
 __asm__ (".section .text.init");
 void _start() {
     __asm__ ("li sp, 0x80100000");
-    main();
+    test();
     leave(1);
 }
 
