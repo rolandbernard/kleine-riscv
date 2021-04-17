@@ -30,7 +30,7 @@ $(BUILD_DIR)/%: $(SRC_DIR)/%.S ./link.ld $(INC_DIR)/riscv_test.h $(MAKEFILE_LIST
 	@echo "Building $@"
 	$(CC) $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/%: $(SRC_DIR)/%.c ./link.ld $(INC_DIR)/c_test.h $(MAKEFILE_LIST) | $$(dir $$@)
+$(BUILD_DIR)/%: $(SRC_DIR)/%.c ./link.ld $(INC_DIR)/c_test.h $(INC_DIR)/c_support.h $(MAKEFILE_LIST) | $$(dir $$@)
 	@echo "Building $@"
 	$(CC) $(CFLAGS) $< -o $@
 

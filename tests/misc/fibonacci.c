@@ -10,6 +10,7 @@ int recursive(int n) {
 }
 
 void test() {
-    ASSERT(2, recursive(15) == 610);
+    ASSERT(2, recursive(10) == 55);
+    ASSERT(3, recursive(15) == 610);
 }
 

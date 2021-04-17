@@ -13,6 +13,7 @@ long long iterative(int n) {
 }
 
 void test() {
-    ASSERT(2, iterative(75) == 2111485077978050LL);
+    ASSERT(2, iterative(50) == 12586269025LL);
+    ASSERT(3, iterative(75) == 2111485077978050LL);
 }
 
