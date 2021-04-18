@@ -6,14 +6,12 @@
 void test();
 void leave(int code);
 
-__asm__ (".section .text.init");
 void _start() {
     __asm__ ("li sp, 0x80100000");
     test();
     leave(1);
 }
 
-__asm__ (".section .text");
 void leave(int code) {
     for (;;) {
         (*(volatile int*)EXIT_ADDRESS) = code;
