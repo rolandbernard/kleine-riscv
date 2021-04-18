@@ -53,7 +53,9 @@ module execute (
     output [31:0] alu_addition_out,
     output reg [31:0] rs2_data_out,
     output reg [31:0] csr_data_out,
-    output reg branch_taken_out,
+    output reg branch_out,
+    output reg jump_out,
+    output reg cmp_output_out,
     output reg load_out,
     output reg store_out,
     output reg [1:0] load_store_size_out,
@@ -125,7 +127,9 @@ always @(posedge clk) begin
         next_pc_out <= next_pc_in;
         rs2_data_out <= acctual_rs2;
         csr_data_out <= csr_data_in;
-        branch_taken_out <= branch_in && (jump_in || cmp_output);
+        branch_out <= branch_in;
+        jump_out <= jump_in;
+        cmp_output_out <= cmp_output;
         load_out <= load_in;
         store_out <= store_in;
         load_store_size_out <= load_store_size_in;

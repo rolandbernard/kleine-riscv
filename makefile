@@ -8,8 +8,8 @@ SIM_DIR   := sim
 
 # == Test files
 VERILOG_SRC := $(shell find $(SRC_DIR) -type f -name '*.v')
-TEST_SRC    := $(shell find $(TEST_DIR) -type f -name '*.S')
-TEST_BINS   := $(patsubst $(TEST_DIR)/%.S, $(TEST_DIR)/build/%, $(TEST_SRC))
+TEST_SRC    := $(shell find $(TEST_DIR) -type f -name '*.[Sc]')
+TEST_BINS   := $(patsubst $(TEST_DIR)/%.c, $(TEST_DIR)/build/%, $(patsubst $(TEST_DIR)/%.S, $(TEST_DIR)/build/%, $(TEST_SRC)))
 # ==
 
 # == Simulator files
@@ -53,5 +53,5 @@ $(TEST_DIR)/build/%: $(TEST_DIR)/build $(TEST_DIR)/%.S
 
 RUNTEST.$(TEST_DIR)/build/%: $(TEST_DIR)/build/% $(BUILD_DIR)/Vcore
 	@echo "Running test $(notdir $<)"
-	$(BUILD_DIR)/Vcore -c 10000 -e -l 5 $<
+	$(BUILD_DIR)/Vcore -c 1000000 -e -l 5 $<
 

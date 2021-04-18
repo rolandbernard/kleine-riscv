@@ -387,7 +387,9 @@ execute pipeline_execute (
     .alu_addition_out(execute_to_memory_alu_addition),
     .rs2_data_out(execute_to_memory_rs2_data),
     .csr_data_out(execute_to_memory_csr_data),
-    .branch_taken_out(execute_to_memory_branch_taken),
+    .branch_out(execute_to_memory_branch),
+    .jump_out(execute_to_memory_jump),
+    .cmp_output_out(execute_to_memory_cmp_output),
     .load_out(execute_to_memory_load),
     .store_out(execute_to_memory_store),
     .load_store_size_out(execute_to_memory_load_store_size),
@@ -412,7 +414,9 @@ wire [31:0] execute_to_memory_alu_data;
 wire [31:0] execute_to_memory_alu_addition;
 wire [31:0] execute_to_memory_rs2_data;
 wire [31:0] execute_to_memory_csr_data;
-wire execute_to_memory_branch_taken;
+wire execute_to_memory_branch;
+wire execute_to_memory_jump;
+wire execute_to_memory_cmp_output;
 wire execute_to_memory_load;
 wire execute_to_memory_store;
 wire [1:0] execute_to_memory_load_store_size;
@@ -438,7 +442,9 @@ memory pipeline_memory (
     .alu_addition_in(execute_to_memory_alu_addition),
     .rs2_data_in(execute_to_memory_rs2_data),
     .csr_data_in(execute_to_memory_csr_data),
-    .branch_taken_in(execute_to_memory_branch_taken),
+    .branch_in(execute_to_memory_branch),
+    .jump_in(execute_to_memory_jump),
+    .cmp_output_in(execute_to_memory_cmp_output),
     .load_in(execute_to_memory_load),
     .store_in(execute_to_memory_store),
     .load_store_size_in(execute_to_memory_load_store_size),
