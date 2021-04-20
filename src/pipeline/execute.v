@@ -55,7 +55,7 @@ module execute (
     output reg [31:0] csr_data_out,
     output reg branch_out,
     output reg jump_out,
-    output reg cmp_output_out,
+    output cmp_output_out,
     output reg load_out,
     output reg store_out,
     output reg [1:0] load_store_size_out,
@@ -82,12 +82,12 @@ localparam ALU_SEL_CSR = 2'b11;
 wire [31:0] acctual_rs1 = rs1_bypassed_in ? rs1_bypass_in : rs1_data_in;
 wire [31:0] acctual_rs2 = rs2_bypassed_in ? rs2_bypass_in : rs2_data_in;
 
-wire cmp_output;
 cmp ex_cmp (
+    .clk(clk),
     .input_a(acctual_rs1),
     .input_b(acctual_rs2),
     .function_select(cmp_function_in),
-    .result(cmp_output)
+    .result(cmp_output_out)
 );
 
 reg [31:0] alu_input_a;
@@ -129,7 +129,6 @@ always @(posedge clk) begin
         csr_data_out <= csr_data_in;
         branch_out <= branch_in;
         jump_out <= jump_in;
-        cmp_output_out <= cmp_output;
         load_out <= load_in;
         store_out <= store_in;
         load_store_size_out <= load_store_size_in;

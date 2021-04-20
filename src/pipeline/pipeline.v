@@ -1,4 +1,6 @@
-module pipeline (
+module pipeline #(
+    parameter RESET_VECTOR = 32'h8000_0000
+) (
     input clk,
     input reset,
 
@@ -175,7 +177,9 @@ wire hazard_to_memory_invalidate;
 
 wire global_branch_taken;
 
-fetch pipeline_fetch (
+fetch #(
+    .RESET_VECTOR(RESET_VECTOR)
+) pipeline_fetch (
     .clk(clk),
     .reset(reset),
 

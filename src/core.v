@@ -1,4 +1,6 @@
-module core (
+module core #(
+    parameter RESET_VECTOR = 32'h8000_0000
+) (
     input clk,
     input reset,
 
@@ -14,7 +16,9 @@ module core (
     input [31:0] ext_read_data
 );
 
-pipeline core_pipeline (
+pipeline #(
+    .RESET_VECTOR(RESET_VECTOR)
+) core_pipeline (
     .clk(clk),
     .reset(reset),
 
