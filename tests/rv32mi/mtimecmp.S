@@ -31,7 +31,6 @@ RVTEST_CODE_BEGIN
 
   TEST_PASSFAIL
 
-.global mtvec_handler
 mtvec_handler:
   # Make sure CAUSE indicates a timer interrupt
   csrr t1, mcause

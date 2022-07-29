@@ -29,7 +29,6 @@ do_break:
   TEST_PASSFAIL
 
   .align 2
-  .global stvec_handler
 stvec_handler:
   li t1, CAUSE_BREAKPOINT
   csrr t0, scause

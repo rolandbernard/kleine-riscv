@@ -11,12 +11,13 @@ TEST_BINS  := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%, $(patsubst $(SRC_DIR)/%
 # ==
 
 # == Tools
-CC      := clang
+CC := clang --target=riscv32 -march=rv32i
+LD := lld
 # ==
 
 # == Options
-CFLAGS := --target=riscv32 -march=rv32i -ffreestanding -nostdlib -mno-relax
-CFLAGS += -Wl,-Bstatic,-T,link.ld,--strip-debug -I$(INC_DIR) -fuse-ld=lld -mno-relax
+CFLAGS += -ffreestanding -nostdlib -mno-relax -I$(INC_DIR)
+CFLAGS += -static -fuse-ld=$(LD) -Wl,-T,link.ld,--strip-debug
 # ==
 
 .SILENT:
